@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eco Warrior - Level 4: Mirror Runner</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Base colors for Mirror Runner */
+            --bg-top-world: #ffffff; 
+            --bg-bottom-world: #000000; 
+            --obstacle-light-world: #000000; 
+            --obstacle-shadow-world: #ffffff; 
+            --ground-top: #cccccc; 
+            --ground-bottom: #333333; 
+
+            /* Player and UI colors */
+            --player-color: #00ff00; 
+            --ui-text-color: #00ffff; 
+            --game-over-text-color: #ff0000; 
+            --game-win-text-color: #00ff00; 
+
+            /* Neon effects */
+            --neon-main-glow: #0fa; 
+            --neon-sub-glow: #0ff;
+        }
+
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+            color: #e0e0e0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        #game-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #gameCanvas {
+            border: 3px solid var(--neon-main-glow);
+            box-shadow: 0 0 20px var(--neon-main-glow);
+            border-radius: 8px;
+        }
+        
+        .game-header {
+            position: absolute;
+            top: 10px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            z-index: 10;
+        }
+        
+        .level-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 38px;
+            color: var(--neon-main-glow);
+            text-shadow: 0 0 15px var(--neon-main-glow);
+            letter-spacing: 2px;
+            margin-bottom: 5px;
+        }
+        
+        .level-subtitle {
+            font-family: 'Inter', sans-serif;
+            font-size: 16px;
+            color: var(--neon-sub-glow);
+            text-shadow: 0 0 10px var(--neon-sub-glow);
+            margin-bottom: 15px;
+        }
+        
+        /* Goal moved to top right */
+        .goal-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 10;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid var(--neon-sub-glow);
+            border-radius: 8px;
+            padding: 12px 18px;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+            min-width: 150px;
+        }
+        
+        .goal-label {
+            font-size: 14px;
+            color: var(--neon-sub-glow);
+            margin-bottom: 5px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            text-align: center;
+        }
+        
+        .goal-value {
+            font-size: 24px;
+            font-family: 'Orbitron', sans-serif;
+            color: var(--neon-main-glow);
+            text-shadow: 0 0 5px var(--neon-main-glow);
+            display: block;
+            text-align: center;
+        }
+        
+        /* Left panel containing score and controls */
+        .left-panel {
+            position: absolute;
+            top: 100px;
+            left: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            z-index: 10;
+        }
+        
+        .stat-box {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid var(--neon-sub-glow);
+            border-radius: 8px;
+            padding: 12px 18px;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+            min-width: 150px;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: var(--neon-sub-glow);
+            margin-bottom: 5px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-family: 'Orbitron', sans-serif;
+            color: var(--neon-main-glow);
+            text-shadow: 0 0 5px var(--neon-main-glow);
+            display: block;
+            text-align: center;
+        }
+        
+        /* Controls moved below score */
+        .controls-container {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid var(--neon-sub-glow);
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+            min-width: 150px;
+        }
+        
+        .controls-container h3 {
+            color: var(--neon-main-glow);
+            font-family: 'Orbitron', sans-serif;
+            margin-top: 0;
+            text-align: center;
+            border-bottom: 1px solid var(--neon-sub-glow);
+            padding-bottom: 8px;
+            margin-bottom: 12px;
+        }
+        
+        .controls-container p {
+            margin: 12px 0;
+            line-height: 1.5;
+        }
+        
+        .key {
+            display: inline-block;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid var(--neon-sub-glow);
+            border-radius: 4px;
+            padding: 4px 10px;
+            margin: 0 5px;
+            box-shadow: 0 0 5px rgba(0, 255, 255, 0.3);
+            font-family: 'Orbitron', sans-serif;
+            color: var(--neon-main-glow);
+        }
+        
+        .controls-section {
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px dashed var(--neon-sub-glow);
+        }
+        
+        .goal-section {
+            background: rgba(0, 100, 100, 0.3);
+            border-radius: 6px;
+            padding: 10px;
+            margin-top: 15px;
+        }
+        
+        .progress-container {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            max-width: 600px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid var(--neon-sub-glow);
+            border-radius: 8px;
+            padding: 5px;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+            z-index: 10;
+        }
+        
+        .progress-bar {
+            height: 20px;
+            background: linear-gradient(90deg, #00ff00, #00ffff);
+            border-radius: 5px;
+            transition: width 0.3s ease;
+        }
+        
+        @media (max-width: 768px) {
+            .level-title {
+                font-size: 28px;
+            }
+            
+            .level-subtitle {
+                font-size: 14px;
+            }
+            
+            .left-panel {
+                top: 80px;
+                left: 10px;
+            }
+            
+            .stat-box, .controls-container {
+                padding: 8px 12px;
+                min-width: 120px;
+            }
+            
+            .stat-value {
+                font-size: 20px;
+            }
+            
+            .goal-container {
+                top: 15px;
+                right: 10px;
+                min-width: 120px;
+                padding: 8px 12px;
+            }
+            
+            .goal-value {
+                font-size: 20px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .left-panel {
+                top: 70px;
+                left: 10px;
+                gap: 10px;
+            }
+            
+            .goal-container {
+                top: 10px;
+                right: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div class="game-header">
+            <div class="level-title">MIRROR RUNNER</div>
+            <div class="level-subtitle">Control both players simultaneously</div>
+        </div>
+        
+        <!-- Goal moved to top right -->
+        <div class="goal-container">
+            <div class="goal-label">GOAL</div>
+            <div id="goal" class="goal-value">100</div>
+        </div>
+        
+        <!-- Left panel containing score and controls -->
+        <div class="left-panel">
+            <div class="stat-box">
+                <div class="stat-label">SCORE</div>
+                <div id="score" class="stat-value">0</div>
+            </div>
+            
+            <!-- Controls moved below score -->
+            <div class="controls-container">
+                <h3>CONTROLS</h3>
+                <p><span class="key">←</span> <span class="key">→</span> : Move players in mirrored directions</p>
+                <p><span class="key">SPACE</span> / <span class="key">↑</span> : Make both players jump</p>
+                
+                <div class="controls-section">
+                    <p>Avoid the spikes by jumping at the right moment!</p>
+                </div>
+                
+                <div class="goal-section">
+                    <p>Survive as long as possible to earn points!</p>
+                    <p>Reach <strong>100 points</strong> to win!</p>
+                </div>
+            </div>
+        </div>
+        
+        <canvas id="gameCanvas"></canvas>
+        
+        <div class="progress-container">
+            <div id="progress-bar" class="progress-bar"></div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const canvas = document.getElementById('gameCanvas');
+            const ctx = canvas.getContext('2d');
+            const scoreElement = document.getElementById('score');
+            const goalElement = document.getElementById('goal');
+            const progressBar = document.getElementById('progress-bar');
+
+            // Set canvas dimensions to fill the window
+            canvas.width = window.innerWidth * 0.9;
+            canvas.height = window.innerHeight * 0.7;
+
+            // --- Game Constants ---
+            const PLAYER_WIDTH = 30;
+            const PLAYER_HEIGHT = 50;
+            const PLAYER_SPEED = 5;
+            const JUMP_STRENGTH = 15;
+
+            const OBSTACLE_WIDTH = 40;
+            const OBSTACLE_HEIGHT = 60;
+            const SPIKE_HEIGHT = 20;
+            const OBSTACLE_BASE_SPEED = 3;
+            const OBSTACLE_MAX_SPEED = 8;
+            const SPEED_INCREASE_RATE = 0.005;
+
+            const OBSTACLE_SPAWN_INTERVAL = 1800;
+            const OBSTACLE_SPAWN_VARIATION = 700;
+            const OBSTACLE_MIN_SPAWN_INTERVAL = 900;
+
+            const SCORE_INTERVAL = 5000;
+            const SCORE_PER_INTERVAL = 10;
+            const WIN_SCORE = 100;
+
+            // Calculate positions based on canvas size
+            const TOP_LANE_Y = canvas.height / 4;
+            const BOTTOM_LANE_Y = canvas.height * 3 / 4;
+            const LANE_HEIGHT = canvas.height / 2;
+
+            // --- Game State Variables ---
+            let playerTop;
+            let playerBottom;
+            let obstaclesTop = [];
+            let obstaclesBottom = [];
+            let score = 0;
+            let gameTime = 0;
+            let lastFrameTime = 0;
+            let lastObstacleSpawnTime = 0;
+            let lastScoreTime = 0;
+            let animationFrameId;
+
+            // Dynamic difficulty variables
+            let currentObstacleSpeed;
+            let currentSpawnInterval;
+
+            // --- Theme/Color Variables ---
+            let playerColor, uiTextColor;
+            let bgTopWorld, bgBottomWorld, obstacleLightWorld, obstacleShadowWorld, groundTopColor, groundBottomColor;
+
+            function updateThemeColors() {
+                playerColor = '#00ff00';
+                uiTextColor = '#00ffff';
+                bgTopWorld = '#ffffff';
+                bgBottomWorld = '#000000';
+                obstacleLightWorld = '#000000';
+                obstacleShadowWorld = '#ffffff';
+                groundTopColor = '#cccccc';
+                groundBottomColor = '#333333';
+            }
+
+            // --- Player Class ---
+            class Player {
+                constructor(lane) {
+                    this.width = PLAYER_WIDTH;
+                    this.height = PLAYER_HEIGHT;
+                    this.lane = lane;
+                    this.x = (canvas.width / 2) - (this.width / 2);
+                    this.y = (lane === 'top') ? (TOP_LANE_Y - this.height) : (BOTTOM_LANE_Y - this.height);
+                    this.velocityY = 0;
+                    this.dx = 0;
+                    this.isJumping = false;
+                }
+
+                draw() {
+                    ctx.fillStyle = playerColor;
+                    
+                    // Add glow to player
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = playerColor;
+                    
+                    if (this.lane === 'top') {
+                        // Top player - normal orientation
+                        ctx.fillRect(this.x, this.y, this.width, this.height);
+                        
+                        // Draw player head
+                        ctx.beginPath();
+                        ctx.arc(this.x + this.width / 2, this.y - 10, 10, 0, Math.PI * 2);
+                        ctx.fill();
+                    } else {
+                        // Bottom player - vertically flipped
+                        ctx.save();
+                        // Move to center of player
+                        ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
+                        // Flip vertically
+                        ctx.scale(1, -1);
+                        // Draw body relative to center
+                        ctx.fillRect(-this.width / 2, -this.height / 2, this.width, this.height);
+                        // Draw head below the body (which will be above after flipping)
+                        ctx.beginPath();
+                        ctx.arc(0, -this.height / 2 - 10, 10, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.restore();
+                    }
+                    
+                    ctx.shadowBlur = 0;
+                }
+
+                update() {
+                    this.x += this.dx;
+                    if (this.x < 0) this.x = 0;
+                    if (this.x + this.width > canvas.width) this.x = canvas.width - this.width;
+
+                    if (this.lane === 'top') {
+                        this.velocityY += 0.5;
+                    } else {
+                        this.velocityY -= 0.5;
+                    }
+                    this.y += this.velocityY;
+
+                    if (this.lane === 'top') {
+                        const groundY = TOP_LANE_Y - this.height;
+                        if (this.y > groundY) {
+                            this.y = groundY;
+                            this.velocityY = 0;
+                            this.isJumping = false;
+                        }
+                    } else {
+                        const groundY = BOTTOM_LANE_Y - this.height;
+                        if (this.y < groundY) {
+                            this.y = groundY;
+                            this.velocityY = 0;
+                            this.isJumping = false;
+                        }
+                    }
+                }
+
+                jump() {
+                    if (!this.isJumping) {
+                        if (this.lane === 'top') {
+                            this.velocityY = -JUMP_STRENGTH;
+                        } else {
+                            this.velocityY = JUMP_STRENGTH;
+                        }
+                        this.isJumping = true;
+                    }
+                }
+            }
+
+            // --- Obstacle Class (Spikes) ---
+            class Obstacle {
+                constructor(lane, speed) {
+                    this.width = OBSTACLE_WIDTH;
+                    this.height = OBSTACLE_HEIGHT;
+                    this.lane = lane;
+                    this.x = canvas.width;
+                    this.speed = speed;
+
+                    if (this.lane === 'top') {
+                        this.y = TOP_LANE_Y - this.height;
+                    } else {
+                        this.y = BOTTOM_LANE_Y - this.height;
+                    }
+                }
+
+                draw() {
+                    let obstacleColor = (this.lane === 'top') ? obstacleLightWorld : obstacleShadowWorld;
+                    ctx.fillStyle = obstacleColor;
+                    
+                    // Add glow to obstacles
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = obstacleColor;
+
+                    if (this.lane === 'top') {
+                        ctx.fillRect(this.x, this.y + SPIKE_HEIGHT, this.width, this.height - SPIKE_HEIGHT);
+                        ctx.beginPath();
+                        ctx.moveTo(this.x, this.y + SPIKE_HEIGHT);
+                        ctx.lineTo(this.x + this.width, this.y + SPIKE_HEIGHT);
+                        ctx.lineTo(this.x + this.width / 2, this.y);
+                        ctx.closePath();
+                        ctx.fill();
+                    } else {
+                        ctx.fillRect(this.x, this.y, this.width, this.height - SPIKE_HEIGHT);
+                        ctx.beginPath();
+                        ctx.moveTo(this.x, this.y + this.height - SPIKE_HEIGHT);
+                        ctx.lineTo(this.x + this.width, this.y + this.height - SPIKE_HEIGHT);
+                        ctx.lineTo(this.x + this.width / 2, this.y + this.height);
+                        ctx.closePath();
+                        ctx.fill();
+                    }
+                    
+                    ctx.shadowBlur = 0;
+                }
+
+                update() {
+                    this.x -= this.speed;
+                }
+            }
+
+            // --- Collision Detection ---
+            function checkCollision(obj1, obj2) {
+                return obj1.x < obj2.x + obj2.width &&
+                       obj1.x + obj1.width > obj2.x &&
+                       obj1.y < obj2.y + obj2.height &&
+                       obj1.y + obj1.height > obj2.y;
+            }
+
+            // --- Game Initialization ---
+            function initGame() {
+                playerTop = new Player('top');
+                playerBottom = new Player('bottom');
+                obstaclesTop = [];
+                obstaclesBottom = [];
+                score = 0;
+                gameTime = 0;
+                lastFrameTime = 0;
+                lastObstacleSpawnTime = 0;
+                lastScoreTime = 0;
+
+                currentObstacleSpeed = OBSTACLE_BASE_SPEED;
+                currentSpawnInterval = OBSTACLE_SPAWN_INTERVAL;
+
+                updateThemeColors();
+                updateUI();
+
+                if (animationFrameId) {
+                    cancelAnimationFrame(animationFrameId);
+                }
+                animationFrameId = requestAnimationFrame(gameLoop);
+            }
+            
+            function updateUI() {
+                scoreElement.textContent = score;
+                goalElement.textContent = WIN_SCORE;
+                progressBar.style.width = `${Math.min(100, (score / WIN_SCORE) * 100)}%`;
+            }
+
+            // --- Game Loop ---
+            function gameLoop(currentTime) {
+                const deltaTime = currentTime - lastFrameTime;
+                lastFrameTime = currentTime;
+                gameTime = currentTime;
+
+                // Update difficulty
+                currentObstacleSpeed = Math.min(OBSTACLE_MAX_SPEED, OBSTACLE_BASE_SPEED + (score / SCORE_PER_INTERVAL) * SPEED_INCREASE_RATE);
+                currentSpawnInterval = Math.max(OBSTACLE_MIN_SPAWN_INTERVAL, OBSTACLE_SPAWN_INTERVAL - (score / SCORE_PER_INTERVAL) * (OBSTACLE_SPAWN_INTERVAL - OBSTACLE_MIN_SPAWN_INTERVAL) / WIN_SCORE);
+
+                // Check win condition
+                if (score >= WIN_SCORE) {
+                    cancelAnimationFrame(animationFrameId);
+                    window.location.href = 'Level 4 win.html';
+                    return;
+                }
+
+                // Clear canvas
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                // Draw world backgrounds
+                ctx.fillStyle = bgTopWorld;
+                ctx.fillRect(0, 0, canvas.width, canvas.height / 2);
+                ctx.fillStyle = bgBottomWorld;
+                ctx.fillRect(0, canvas.height / 2, canvas.width, canvas.height / 2);
+
+                // Draw grid lines for visual effect
+                ctx.strokeStyle = '#666666';
+                ctx.lineWidth = 1;
+                for (let i = 0; i < canvas.width; i += 50) {
+                    ctx.beginPath();
+                    ctx.moveTo(i, 0);
+                    ctx.lineTo(i, canvas.height);
+                    ctx.stroke();
+                }
+                for (let i = 0; i < canvas.height; i += 50) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, i);
+                    ctx.lineTo(canvas.width, i);
+                    ctx.stroke();
+                }
+
+                // Draw ground/ceiling
+                ctx.fillStyle = groundTopColor;
+                ctx.fillRect(0, TOP_LANE_Y, canvas.width, 5);
+                ctx.fillStyle = groundBottomColor;
+                ctx.fillRect(0, BOTTOM_LANE_Y, canvas.width, 5);
+
+                // Draw players
+                playerTop.update();
+                playerTop.draw();
+                playerBottom.update();
+                playerBottom.draw();
+
+                // Spawn obstacles
+                if (currentTime - lastObstacleSpawnTime > (currentSpawnInterval + (Math.random() * OBSTACLE_SPAWN_VARIATION * 2) - OBSTACLE_SPAWN_VARIATION)) {
+                    const spawnTop = Math.random() < 0.5;
+                    if (spawnTop) {
+                        obstaclesTop.push(new Obstacle('top', currentObstacleSpeed));
+                    } else {
+                        obstaclesBottom.push(new Obstacle('bottom', currentObstacleSpeed));
+                    }
+                    lastObstacleSpawnTime = currentTime;
+                }
+
+                // Update and draw obstacles for top lane
+                for (let i = obstaclesTop.length - 1; i >= 0; i--) {
+                    const obstacle = obstaclesTop[i];
+                    obstacle.update();
+                    obstacle.draw();
+
+                    if (obstacle.x + obstacle.width < 0) {
+                        obstaclesTop.splice(i, 1);
+                    }
+
+                    if (checkCollision(playerTop, obstacle)) {
+                        cancelAnimationFrame(animationFrameId);
+                        window.location.href = 'Level 4 Lose.html';
+                        return;
+                    }
+                }
+
+                // Update and draw obstacles for bottom lane
+                for (let i = obstaclesBottom.length - 1; i >= 0; i--) {
+                    const obstacle = obstaclesBottom[i];
+                    obstacle.update();
+                    obstacle.draw();
+
+                    if (obstacle.x + obstacle.width < 0) {
+                        obstaclesBottom.splice(i, 1);
+                    }
+
+                    if (checkCollision(playerBottom, obstacle)) {
+                        cancelAnimationFrame(animationFrameId);
+                        window.location.href = 'Level 4 Lose.html';
+                        return;
+                    }
+                }
+
+                // Update score every 5 seconds
+                if (Math.floor(currentTime / SCORE_INTERVAL) > Math.floor((currentTime - deltaTime) / SCORE_INTERVAL)) {
+                    score += SCORE_PER_INTERVAL;
+                    updateUI();
+                }
+
+                // Continue the game loop
+                animationFrameId = requestAnimationFrame(gameLoop);
+            }
+
+            // --- Event Listeners ---
+            let keys = {};
+            document.addEventListener('keydown', (e) => {
+                keys[e.key] = true;
+                if (e.key === 'ArrowLeft') {
+                    playerTop.dx = -PLAYER_SPEED;
+                    playerBottom.dx = PLAYER_SPEED;
+                }
+                if (e.key === 'ArrowRight') {
+                    playerTop.dx = PLAYER_SPEED;
+                    playerBottom.dx = -PLAYER_SPEED;
+                }
+                if (e.key === ' ' || e.key === 'ArrowUp') {
+                    playerTop.jump();
+                    playerBottom.jump();
+                }
+            });
+
+            document.addEventListener('keyup', (e) => {
+                keys[e.key] = false;
+                if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                    playerTop.dx = 0;
+                    playerBottom.dx = 0;
+                }
+            });
+
+            // Handle window resizing
+            window.addEventListener('resize', () => {
+                canvas.width = window.innerWidth * 0.9;
+                canvas.height = window.innerHeight * 0.7;
+                
+                // Update positions based on new canvas size
+                playerTop.y = canvas.height / 4 - playerTop.height;
+                playerBottom.y = canvas.height * 3 / 4 - playerBottom.height;
+                playerTop.x = (canvas.width / 2) - (playerTop.width / 2);
+                playerBottom.x = (canvas.width / 2) - (playerBottom.width / 2);
+            });
+
+            // Start the game
+            initGame();
+        });
+    </script>
+</body>
+</html>

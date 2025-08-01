@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eco Warrior - Level 3 Intro</title>
+    <!-- Google Fonts for modern/neon look -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Inter:wght@400&display=swap" rel="stylesheet">
+
+    <style>
+        /* Global Styles */
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(180deg, #0d0d1a 0%, #000000 100%); /* Dark, deep gradient */
+            color: #e0e0e0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh; /* Ensure it takes full viewport height */
+        }
+
+        /* Container for the level intro elements */
+        .level-intro-container {
+            text-align: center;
+            padding: 40px 20px;
+            background: rgba(0, 0, 0, 0.4); /* Slightly transparent dark background */
+            border-radius: 15px;
+            backdrop-filter: blur(5px); /* Frosted glass effect */
+            box-shadow: 0 0 30px rgba(0, 150, 255, 0.5); /* Blue glow for container */
+            max-width: 700px; /* Limit width on larger screens */
+            width: 90%; /* Responsive width */
+        }
+
+        /* Neon Text Effect for Level Title */
+        .neon-level-text {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(2.5em, 8vw, 5em); /* Responsive font size */
+            color: #fff; /* Base white for text */
+            text-shadow:
+                0 0 7px #fff,
+                0 0 10px #fff,
+                0 0 21px #fff,
+                0 0 42px #09f, /* Primary neon blue */
+                0 0 82px #09f,
+                0 0 92px #09f,
+                0 0 102px #09f,
+                0 0 151px #09f;
+            margin-bottom: 30px;
+            animation: pulseNeon 1.5s infinite alternate; /* Subtle pulsing animation */
+        }
+
+        @keyframes pulseNeon {
+            0% { text-shadow: 0 0 7px #fff, 0 0 10px #fff, 0 0 21px #fff, 0 0 42px #09f, 0 0 82px #09f, 0 0 92px #09f, 0 0 102px #09f, 0 0 151px #09f; }
+            100% { text-shadow: 0 0 5px #fff, 0 0 9px #fff, 0 0 18px #fff, 0 0 38px #09f, 0 0 78px #09f, 0 0 88px #09f, 0 0 98px #09f, 0 0 140px #09f; }
+        }
+
+        /* Neon Button Style for "Play Level 3" */
+        .neon-button {
+            display: inline-block; /* Allows centering with text-align */
+            width: 80%; /* Responsive width */
+            max-width: 300px; /* Max width for button */
+            padding: 18px 30px;
+            margin-top: 20px;
+            background: rgba(0, 150, 255, 0.1); /* Semi-transparent blue base */
+            color: #0096ff; /* Neon blue text color */
+            border: 2px solid #0096ff; /* Neon blue border */
+            border-radius: 12px;
+            font-size: clamp(1.2em, 3vw, 1.8em);
+            font-family: 'Inter', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.3s ease-in-out;
+            box-shadow:
+                0 0 5px #0096ff,
+                0 0 10px #0096ff,
+                0 0 20px #0096ff,
+                0 0 40px #0096ff inset; /* Inner glow */
+        }
+
+        .neon-button:hover {
+            background: rgba(0, 150, 255, 0.2);
+            color: #fff;
+            box-shadow:
+                0 0 10px #0096ff,
+                0 0 20px #0096ff,
+                0 0 30px #0096ff,
+                0 0 50px #0096ff,
+                0 0 80px #0096ff inset;
+            transform: scale(1.05);
+        }
+
+        .neon-button:active {
+            transform: scale(0.98);
+            box-shadow:
+                0 0 5px #0096ff,
+                0 0 10px #0096ff inset;
+        }
+
+        /* Instructions Text */
+        .instructions {
+            margin-top: 40px;
+            font-size: clamp(0.9em, 2.5vw, 1.1em);
+            line-height: 1.6;
+            padding: 0 20px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            color: #e0e0e0;
+            text-shadow: 0 0 5px rgba(0, 150, 255, 0.3); /* Subtle glow */
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 480px) {
+            .level-intro-container {
+                padding: 30px 15px;
+            }
+            .neon-level-text {
+                font-size: clamp(2em, 12vw, 4em);
+            }
+            .neon-button {
+                padding: 15px 20px;
+                font-size: clamp(1em, 4vw, 1.5em);
+            }
+            .instructions {
+                font-size: clamp(0.8em, 3.5vw, 1em);
+            }
+        }
+
+        a {
+            text-decoration: none;  /* removes underline */
+        }
+
+        a:link, a:visited {
+            color: inherit;         /* removes blue color */
+        }
+    </style>
+</head>
+<body>
+    <div class="level-intro-container">
+        <h1 class="neon-level-text">Level 3: Shadow Switch</h1>
+        <a href="Level 3.html" class="neon-button" id="start-game-btn">Start Game</a>
+        <p class="instructions">
+            <strong>How to Play Level 3:</strong><br>
+            In this unique challenge, you control a player who must survive by expertly switching between two realities: the Light World and the Shadow World. Use the Left Arrow and Right Arrow keys to move your player horizontally, and press the 'Z' key to instantly toggle between worlds. Obstacles are only visible and dangerous in one world, so you must time your switches perfectly to pass through them safely. Your score increases every second you survive, with the goal of reaching 100 points to win the level; however, colliding with any visible obstacle will result in a game over.
+        </p>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const playButton = document.getElementById('play-level-3-button');
+
+            playButton.addEventListener('click', () => {
+                // For now, this will just show an alert.
+                // In a multi-level game, this would navigate to the actual Level 3 game.
+                alert('Starting Level 3: Ocean Cleanup! (Actual game mechanics would load here)');
+                console.log('Play Level 3 button clicked!');
+            });
+        });
+    </script>
+</body>
+</html>

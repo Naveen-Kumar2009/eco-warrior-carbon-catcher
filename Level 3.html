@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eco Warrior - Level 3: Shadow Switch</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Base colors for dark theme */
+            --bg-color-dark: #000000;
+            --text-color-dark: #e0e0e0;
+            
+            /* Player and UI colors */
+            --player-color: #00ff00;
+            --ui-text-color: #00ffff;
+            --game-over-text-color: #ff0000;
+            --game-win-text-color: #00ff00;
+            
+            /* World-specific colors */
+            --light-world-bg: #ffffff;
+            --light-world-obstacle: #000000;
+            --shadow-world-bg: #000000;
+            --shadow-world-obstacle: #ffffff;
+            
+            /* Neon effects */
+            --neon-main-glow: #0fa;
+            --neon-sub-glow: #0ff;
+            --light-world-glow: #ffffff;
+            --shadow-world-glow: #ffff00;
+        }
+
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: var(--text-color-dark);
+            height: 100vh;
+        }
+
+        #game-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #gameCanvas {
+            border: 3px solid var(--neon-main-glow);
+            box-shadow: 0 0 20px var(--neon-main-glow);
+            border-radius: 8px;
+            transition: box-shadow 0.3s ease;
+        }
+        
+        .game-header {
+            position: absolute;
+            top: 10px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            z-index: 10;
+        }
+        
+        .level-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 42px;
+            color: var(--neon-main-glow);
+            text-shadow: 0 0 15px var(--neon-main-glow);
+            letter-spacing: 3px;
+            margin-bottom: 5px;
+        }
+        
+        .level-subtitle {
+            font-family: 'Inter', sans-serif;
+            font-size: 18px;
+            color: var(--neon-sub-glow);
+            text-shadow: 0 0 10px var(--neon-sub-glow);
+            margin-bottom: 15px;
+        }
+        
+        .game-stats {
+            position: absolute;
+            top: 100px;
+            left: 20px;
+            display: flex;
+            flex-direction: row;
+            gap: 15px;
+            z-index: 10;
+        }
+        
+        .stat-box {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid var(--neon-sub-glow);
+            border-radius: 8px;
+            padding: 12px 18px;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+            min-width: 150px;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: var(--neon-sub-glow);
+            margin-bottom: 5px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-family: 'Orbitron', sans-serif;
+            color: var(--neon-main-glow);
+            text-shadow: 0 0 5px var(--neon-main-glow);
+            display: block;
+            text-align: center;
+        }
+        
+        .world-indicator {
+            position: absolute;
+            top: 100px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid var(--neon-sub-glow);
+            border-radius: 8px;
+            padding: 15px 30px;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 24px;
+            color: var(--neon-main-glow);
+            text-shadow: 0 0 5px var(--neon-main-glow);
+            z-index: 10;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .progress-container {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            max-width: 600px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid var(--neon-sub-glow);
+            border-radius: 8px;
+            padding: 5px;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+            z-index: 10;
+        }
+        
+        .progress-bar {
+            height: 20px;
+            background: linear-gradient(90deg, #00ff00, #00ffff);
+            border-radius: 5px;
+            transition: width 0.3s ease;
+        }
+        
+        .instructions {
+            position: absolute;
+            top: 180px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid var(--neon-sub-glow);
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+            max-width: 300px;
+            z-index: 10;
+        }
+        
+        .instructions h3 {
+            color: var(--neon-main-glow);
+            font-family: 'Orbitron', sans-serif;
+            margin-top: 0;
+            text-align: center;
+            border-bottom: 1px solid var(--neon-sub-glow);
+            padding-bottom: 8px;
+            margin-bottom: 12px;
+        }
+        
+        .instructions p {
+            margin: 12px 0;
+            line-height: 1.5;
+        }
+        
+        .key {
+            display: inline-block;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid var(--neon-sub-glow);
+            border-radius: 4px;
+            padding: 4px 10px;
+            margin: 0 5px;
+            box-shadow: 0 0 5px rgba(0, 255, 255, 0.3);
+            font-family: 'Orbitron', sans-serif;
+            color: var(--neon-main-glow);
+        }
+        
+        .controls-section {
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px dashed var(--neon-sub-glow);
+        }
+        
+        .goal-section {
+            background: rgba(0, 100, 100, 0.3);
+            border-radius: 6px;
+            padding: 10px;
+            margin-top: 15px;
+        }
+        
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        
+        @media (max-width: 768px) {
+            .level-title {
+                font-size: 32px;
+            }
+            
+            .level-subtitle {
+                font-size: 16px;
+            }
+            
+            .game-stats, .world-indicator {
+                top: 80px;
+            }
+            
+            .stat-box, .world-indicator {
+                padding: 10px 15px;
+            }
+            
+            .stat-value, .world-indicator {
+                font-size: 20px;
+            }
+            
+            .instructions {
+                top: 170px;
+                left: 10px;
+                max-width: 250px;
+                font-size: 14px;
+                padding: 10px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .game-stats {
+                top: 70px;
+                left: 10px;
+                flex-direction: column;
+            }
+            
+            .world-indicator {
+                top: 160px;
+                right: 10px;
+                padding: 8px 12px;
+                font-size: 18px;
+            }
+            
+            .instructions {
+                top: 220px;
+                left: 10px;
+                right: 10px;
+                max-width: none;
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div class="game-header">
+            <div class="level-title">SHADOW SWITCH</div>
+            <div class="level-subtitle">Switch between worlds to survive</div>
+        </div>
+        
+        <div class="game-stats">
+            <div class="stat-box">
+                <div class="stat-label">SCORE</div>
+                <div id="score" class="stat-value">0</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">GOAL</div>
+                <div id="goal" class="stat-value">300</div>
+            </div>
+        </div>
+        
+        <div class="instructions">
+            <h3>HOW TO PLAY</h3>
+            <p>Switch between Light and Shadow worlds to avoid obstacles.</p>
+            <p>Obstacles in your current world are visible and dangerous!</p>
+            <!-- <p>⚠️ <strong>NEW:</strong> Some obstacles change size!</p> -->
+            
+            <div class="controls-section">
+                <p><span class="key">←</span> <span class="key">→</span> : Move left and right</p>
+                <p><span class="key">Z</span> : Switch worlds</p>
+            </div>
+            
+            <div class="goal-section">
+                <p>Survive as long as possible to earn points!</p>
+                <p>Reach <strong>300 points</strong> to win!</p>
+            </div>
+        </div>
+        
+        <div id="world-indicator" class="world-indicator">LIGHT WORLD</div>
+        
+        <canvas id="gameCanvas"></canvas>
+        
+        <div class="progress-container">
+            <div id="progress-bar" class="progress-bar"></div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const canvas = document.getElementById('gameCanvas');
+            const ctx = canvas.getContext('2d');
+            const scoreElement = document.getElementById('score');
+            const goalElement = document.getElementById('goal');
+            const progressBar = document.getElementById('progress-bar');
+            const worldIndicator = document.getElementById('world-indicator');
+            const gameContainer = document.getElementById('game-container');
+
+            // Set canvas dimensions to fill the window
+            canvas.width = window.innerWidth * 0.9;
+            canvas.height = window.innerHeight * 0.7;
+
+            // --- Game Constants ---
+            const PLAYER_WIDTH = 40;
+            const PLAYER_HEIGHT = 60;
+            const PLAYER_SPEED = 5;
+            const GROUND_HEIGHT = 50;
+
+            const OBSTACLE_WIDTH = 50;
+            const OBSTACLE_HEIGHT = 80;
+            const OBSTACLE_BASE_SPEED = 3;
+            const OBSTACLE_MAX_SPEED = 12;
+            const SPEED_INCREASE_RATE = 0.01;
+
+            const OBSTACLE_SPAWN_INTERVAL = 1200;
+            const OBSTACLE_SPAWN_VARIATION = 500;
+            const OBSTACLE_MIN_SPAWN_INTERVAL = 600;
+
+            const INTERVAL_DECREASE_RATE = 0.03;
+            const SCORE_PER_SECOND = 10;
+            const WIN_SCORE = 300;
+
+            // --- Game State Variables ---
+            let player;
+            let obstacles = [];
+            let particles = [];
+            let score = 0;
+            let gameTime = 0;
+            let lastFrameTime = 0;
+            let lastObstacleSpawnTime = 0;
+            let animationFrameId;
+            let isLightWorld = true;
+
+            // Dynamic difficulty variables
+            let currentObstacleSpeed;
+            let currentSpawnInterval;
+
+            // --- Theme/Color Variables ---
+            let playerColor, uiTextColor;
+            let lightWorldBg, lightWorldObstacle;
+            let shadowWorldBg, shadowWorldObstacle;
+
+            function updateThemeColors() {
+                playerColor = '#00ff00';
+                uiTextColor = '#00ffff';
+                lightWorldBg = '#ffffff';
+                lightWorldObstacle = '#000000';
+                shadowWorldBg = '#000000';
+                shadowWorldObstacle = '#ffffff';
+            }
+
+            // --- Particle Class for effects ---
+            class Particle {
+                constructor(x, y, color) {
+                    this.x = x;
+                    this.y = y;
+                    this.size = Math.random() * 5 + 2;
+                    this.speedX = Math.random() * 6 - 3;
+                    this.speedY = Math.random() * 6 - 3;
+                    this.color = color;
+                    this.life = 20;
+                }
+                
+                update() {
+                    this.x += this.speedX;
+                    this.y += this.speedY;
+                    this.life--;
+                }
+                
+                draw() {
+                    ctx.globalAlpha = this.life / 20;
+                    ctx.fillStyle = this.color;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.globalAlpha = 1;
+                }
+            }
+            
+            function createParticles(x, y, count, color) {
+                for (let i = 0; i < count; i++) {
+                    particles.push(new Particle(x, y, color));
+                }
+            }
+
+            // --- Player Class ---
+            class Player {
+                constructor() {
+                    this.width = PLAYER_WIDTH;
+                    this.height = PLAYER_HEIGHT;
+                    this.x = (canvas.width / 2) - (this.width / 2);
+                    this.y = canvas.height - GROUND_HEIGHT - this.height;
+                    this.dx = 0;
+                    this.glowIntensity = 0;
+                }
+
+                draw() {
+                    // Draw player with neon glow
+                    ctx.shadowBlur = 20 + this.glowIntensity;
+                    ctx.shadowColor = 'rgba(0, 255, 64, 0.8)';
+                    ctx.fillStyle = playerColor;
+                    ctx.fillRect(this.x, this.y, this.width, this.height);
+                    
+                    // Draw player head
+                    ctx.beginPath();
+                    ctx.arc(this.x + this.width / 2, this.y - 10, 10, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Draw environmental symbol
+                    ctx.fillStyle = '#00cc00';
+                    ctx.fillRect(this.x + 10, this.y + 15, 20, 20);
+                    
+                    ctx.shadowBlur = 0;
+                    
+                    // Reset glow intensity
+                    if (this.glowIntensity > 0) {
+                        this.glowIntensity -= 1;
+                    }
+                }
+
+                update() {
+                    this.x += this.dx;
+                    if (this.x < 0) this.x = 0;
+                    if (this.x + this.width > canvas.width) this.x = canvas.width - this.width;
+                }
+                
+                pulse() {
+                    this.glowIntensity = 15;
+                }
+            }
+
+            // --- Obstacle Class ---
+            class Obstacle {
+                constructor(world, speed) {
+                    this.world = world;
+                    this.width = OBSTACLE_WIDTH;
+                    this.height = OBSTACLE_HEIGHT;
+                    this.x = canvas.width;
+                    this.y = canvas.height - GROUND_HEIGHT - this.height;
+                    this.speed = speed;
+                    this.pattern = Math.floor(Math.random() * 5); // More patterns
+                    
+                    // Difficulty enhancements
+                    this.changingSize = Math.random() < 0.2; // 20% chance to change size
+                    this.sizeChangeDirection = 1;
+                    this.minSize = OBSTACLE_WIDTH * 0.5;
+                    this.maxSize = OBSTACLE_WIDTH * 1.5;
+                }
+
+                draw() {
+                    const visible = (this.world === 'light' && isLightWorld) || (this.world === 'shadow' && !isLightWorld);
+                    if (!visible) return;
+                    
+                    const color = (this.world === 'light') ? lightWorldObstacle : shadowWorldObstacle;
+                    const glowColor = (this.world === 'light') ? 'rgba(255, 255, 255, 0.8)' : 'rgba(255, 255, 0, 0.8)';
+                    
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = glowColor;
+                    ctx.fillStyle = color;
+                    
+                    // Draw different obstacle patterns
+                    if (this.pattern === 0) {
+                        // Simple block
+                        ctx.fillRect(this.x, this.y, this.width, this.height);
+                    } else if (this.pattern === 1) {
+                        // Pyramid
+                        ctx.beginPath();
+                        ctx.moveTo(this.x, this.y + this.height);
+                        ctx.lineTo(this.x + this.width, this.y + this.height);
+                        ctx.lineTo(this.x + this.width/2, this.y);
+                        ctx.closePath();
+                        ctx.fill();
+                    } else if (this.pattern === 2) {
+                        // Pillars
+                        const pillarWidth = this.width / 3;
+                        ctx.fillRect(this.x, this.y, pillarWidth, this.height);
+                        ctx.fillRect(this.x + pillarWidth * 2, this.y, pillarWidth, this.height);
+                    } else if (this.pattern === 3) {
+                        // Moving obstacle (oscillates vertically)
+                        const offset = Math.sin(Date.now() / 200) * 20;
+                        ctx.fillRect(this.x, this.y + offset, this.width, this.height);
+                    } else {
+                        // Gap obstacle (player must pass through gap)
+                        const gapWidth = this.width / 3;
+                        ctx.fillRect(this.x, this.y, gapWidth, this.height);
+                        ctx.fillRect(this.x + gapWidth * 2, this.y, gapWidth, this.height);
+                    }
+                    
+                    ctx.shadowBlur = 0;
+                    
+                    // Draw indicator for changing size obstacles
+                    if (this.changingSize) {
+                        ctx.fillStyle = '#ff7700';
+                        ctx.beginPath();
+                        ctx.arc(this.x + this.width/2, this.y - 15, 8, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+
+                update(deltaTime) {
+                    this.x -= this.speed;
+                    
+                    // Handle changing size obstacles
+                    if (this.changingSize) {
+                        this.width += this.sizeChangeDirection * 0.1;
+                        if (this.width < this.minSize || this.width > this.maxSize) {
+                            this.sizeChangeDirection *= -1;
+                        }
+                    }
+                }
+            }
+
+            // --- Collision Detection ---
+            function checkCollision(obj1, obj2) {
+                return obj1.x < obj2.x + obj2.width &&
+                       obj1.x + obj1.width > obj2.x &&
+                       obj1.y < obj2.y + obj2.height &&
+                       obj1.y + obj1.height > obj2.y;
+            }
+
+            // --- Game Initialization ---
+            function initGame() {
+                player = new Player();
+                obstacles = [];
+                particles = [];
+                score = 0;
+                gameTime = 0;
+                lastFrameTime = 0;
+                lastObstacleSpawnTime = 0;
+                isLightWorld = true;
+
+                currentObstacleSpeed = OBSTACLE_BASE_SPEED;
+                currentSpawnInterval = OBSTACLE_SPAWN_INTERVAL;
+
+                updateThemeColors();
+                updateUI();
+
+                if (animationFrameId) {
+                    cancelAnimationFrame(animationFrameId);
+                }
+                animationFrameId = requestAnimationFrame(gameLoop);
+            }
+            
+            function updateUI() {
+                scoreElement.textContent = score;
+                goalElement.textContent = WIN_SCORE;
+                worldIndicator.textContent = isLightWorld ? 'LIGHT WORLD' : 'SHADOW WORLD';
+                worldIndicator.style.color = isLightWorld ? '#ffffff' : '#ffff00';
+                worldIndicator.style.textShadow = isLightWorld ? '0 0 10px #ffffff' : '0 0 10px #ffff00';
+                worldIndicator.style.borderColor = isLightWorld ? '#ffffff' : '#ffff00';
+                worldIndicator.style.boxShadow = isLightWorld ? 
+                    '0 0 15px rgba(255, 255, 255, 0.5)' : 
+                    '0 0 15px rgba(255, 255, 0, 0.5)';
+                progressBar.style.width = `${Math.min(100, (score / WIN_SCORE) * 100)}%`;
+            }
+
+            // --- Game Loop ---
+            function gameLoop(currentTime) {
+                const deltaTime = currentTime - lastFrameTime;
+                lastFrameTime = currentTime;
+                gameTime = currentTime;
+
+                // Update difficulty
+                currentObstacleSpeed = Math.min(OBSTACLE_MAX_SPEED, OBSTACLE_BASE_SPEED + (score / SCORE_PER_SECOND) * SPEED_INCREASE_RATE);
+                currentSpawnInterval = Math.max(OBSTACLE_MIN_SPAWN_INTERVAL, OBSTACLE_SPAWN_INTERVAL - (score / SCORE_PER_SECOND) * INTERVAL_DECREASE_RATE);
+
+                // Check win condition
+                if (score >= WIN_SCORE) {
+                    cancelAnimationFrame(animationFrameId);
+                    window.location.href = 'Level 3 win.html';
+                    return;
+                }
+
+                // Clear canvas and draw background
+                ctx.fillStyle = isLightWorld ? lightWorldBg : shadowWorldBg;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // Draw grid lines for depth effect
+                ctx.strokeStyle = isLightWorld ? '#e0e0e0' : '#444444';
+                ctx.lineWidth = 1;
+                for (let i = 0; i < canvas.width; i += 40) {
+                    ctx.beginPath();
+                    ctx.moveTo(i, 0);
+                    ctx.lineTo(i, canvas.height);
+                    ctx.stroke();
+                }
+                for (let i = 0; i < canvas.height; i += 40) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, i);
+                    ctx.lineTo(canvas.width, i);
+                    ctx.stroke();
+                }
+
+                // Draw ground with glow
+                ctx.fillStyle = isLightWorld ? '#cccccc' : '#333333';
+                ctx.fillRect(0, canvas.height - GROUND_HEIGHT, canvas.width, GROUND_HEIGHT);
+                
+                // Draw ground glow
+                ctx.strokeStyle = isLightWorld ? '#ffffff' : '#ffff00';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(0, canvas.height - GROUND_HEIGHT);
+                ctx.lineTo(canvas.width, canvas.height - GROUND_HEIGHT);
+                ctx.stroke();
+
+                // Draw player
+                player.update();
+                player.draw();
+
+                // Spawn obstacles
+                if (currentTime - lastObstacleSpawnTime > (currentSpawnInterval + (Math.random() * OBSTACLE_SPAWN_VARIATION * 2) - OBSTACLE_SPAWN_VARIATION)) {
+                    const obstacleWorld = Math.random() < 0.5 ? 'light' : 'shadow';
+                    obstacles.push(new Obstacle(obstacleWorld, currentObstacleSpeed));
+                    lastObstacleSpawnTime = currentTime;
+                }
+
+                // Update and draw obstacles
+                for (let i = obstacles.length - 1; i >= 0; i--) {
+                    const obstacle = obstacles[i];
+                    obstacle.update(deltaTime);
+                    
+                    // Only draw obstacle if in current world
+                    if ((obstacle.world === 'light' && isLightWorld) || (obstacle.world === 'shadow' && !isLightWorld)) {
+                        obstacle.draw();
+                    }
+
+                    // Remove off-screen obstacles
+                    if (obstacle.x + obstacle.width < 0) {
+                        obstacles.splice(i, 1);
+                    }
+
+                    // Check collision with visible obstacles
+                    if ((obstacle.world === 'light' && isLightWorld) || (obstacle.world === 'shadow' && !isLightWorld)) {
+                        if (checkCollision(player, obstacle)) {
+                            // Create collision particles
+                            createParticles(
+                                (player.x + obstacle.x + obstacle.width/2) / 2,
+                                (player.y + obstacle.y + obstacle.height/2) / 2,
+                                30,
+                                '#ff0000'
+                            );
+                            
+                            // Show collision effect
+                            player.pulse();
+                            
+                            // Cancel animation after a small delay to show effect
+                            setTimeout(() => {
+                                cancelAnimationFrame(animationFrameId);
+                                window.location.href = 'Level 3 Lose.html';
+                            }, 200);
+                            return;
+                        }
+                    }
+                }
+                
+                // Update and draw particles
+                for (let i = particles.length - 1; i >= 0; i--) {
+                    particles[i].update();
+                    particles[i].draw();
+                    
+                    if (particles[i].life <= 0) {
+                        particles.splice(i, 1);
+                    }
+                }
+
+                // Update score
+                if (Math.floor(currentTime / 1000) > Math.floor((currentTime - deltaTime) / 1000)) {
+                    score += SCORE_PER_SECOND;
+                    updateUI();
+                }
+
+                // Continue the game loop
+                animationFrameId = requestAnimationFrame(gameLoop);
+            }
+
+            // --- Event Listeners ---
+            let keys = {};
+            document.addEventListener('keydown', (e) => {
+                keys[e.key] = true;
+                if (e.key === 'ArrowLeft') {
+                    player.dx = -PLAYER_SPEED;
+                }
+                if (e.key === 'ArrowRight') {
+                    player.dx = PLAYER_SPEED;
+                }
+                if (e.key === 'z' || e.key === 'Z') {
+                    isLightWorld = !isLightWorld;
+                    updateUI();
+                    
+                    // Create world switch particles
+                    createParticles(
+                        player.x + player.width/2,
+                        player.y + player.height/2,
+                        20,
+                        isLightWorld ? '#ffffff' : '#ffff00'
+                    );
+                    
+                    // Add visual effect for world switch
+                    canvas.style.boxShadow = isLightWorld ? 
+                        '0 0 30px rgba(255, 255, 255, 0.7)' : 
+                        '0 0 30px rgba(255, 255, 0, 0.7)';
+                    setTimeout(() => {
+                        canvas.style.boxShadow = '0 0 20px var(--neon-main-glow)';
+                    }, 300);
+                }
+            });
+
+            document.addEventListener('keyup', (e) => {
+                keys[e.key] = false;
+                if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                    player.dx = 0;
+                }
+            });
+
+            // Handle window resizing
+            window.addEventListener('resize', () => {
+                canvas.width = window.innerWidth * 0.9;
+                canvas.height = window.innerHeight * 0.7;
+                if (player) {
+                    player.y = canvas.height - GROUND_HEIGHT - player.height;
+                    player.x = (canvas.width / 2) - (player.width / 2);
+                }
+            });
+
+            // Start the game
+            initGame();
+        });
+    </script>
+</body>
+</html>

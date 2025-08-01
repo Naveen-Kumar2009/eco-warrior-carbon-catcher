@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eco Warrior - Level 1: The Carbon Catcher</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color-dark: #0d0d1a;
+            --bg-gradient-start-dark: #0d0d1a;
+            --bg-gradient-end-dark: #000000;
+            --text-color-dark: #e0e0e0;
+            --menu-bg-dark: rgba(0, 0, 0, 0.4);
+            --menu-shadow-dark: rgba(0, 255, 255, 0.3);
+            --button-bg-dark: rgba(0, 255, 255, 0.1);
+            --button-border-dark: #00ffff;
+            --button-text-dark: #00ffff;
+            --button-shadow-dark: #00ffff;
+            --neon-main-glow: #0fa;
+            --neon-sub-glow: #0ff;
+            --neon-car-color: #00ffcc;
+            --neon-smoke-color: #ff00ff;
+            --neon-bird-color: #ffff00;
+            --city-glow-color: rgba(0, 255, 255, 0.5);
+            --level1-bg-dark: #1a1a2e;
+            --level1-bg-light: #e0f2f7;
+            
+            --player-color: #00ff00;
+            --enemy-smoke-color: #ff00ff;
+            --enemy-plastic-color: #00ffff;
+            --ground-color: #333333;
+            --ui-text-color: #ffffff;
+            --game-over-text-color: #ff0000;
+            --game-win-text-color: #00ff00;
+            
+            /* New theme enhancements */
+            --neon-player-glow: #00ff40;
+            --neon-smoke-glow: #ff00aa;
+            --neon-plastic-glow: #00c8ff;
+            --ground-neon-glow: #00ffff;
+        }
+
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+            color: var(--text-color-dark);
+            transition: background-color 0.5s ease, color 0.5s ease;
+        }
+
+        #game-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .game-header {
+            position: absolute;
+            top: 10px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            z-index: 10;
+        }
+        
+        .level-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 38px;
+            color: var(--neon-main-glow);
+            text-shadow: 0 0 15px var(--neon-main-glow);
+            letter-spacing: 2px;
+            margin-bottom: 5px;
+        }
+        
+        .level-subtitle {
+            font-family: 'Inter', sans-serif;
+            font-size: 16px;
+            color: var(--neon-sub-glow);
+            text-shadow: 0 0 10px var(--neon-sub-glow);
+            margin-bottom: 15px;
+        }
+
+        #gameCanvas {
+            border: 3px solid var(--neon-main-glow);
+            box-shadow: 0 0 20px var(--neon-main-glow);
+            border-radius: 8px;
+            background-color: var(--level1-bg-dark);
+            transition: background-color 0.5s ease, border-color 0.5s ease, box-shadow 0.5s ease;
+        }
+        
+        /* Enhanced UI elements */
+        .game-stats {
+            position: absolute;
+            top: 100px;
+            left: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            z-index: 10;
+        }
+        
+        .stat-box {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid var(--neon-sub-glow);
+            border-radius: 8px;
+            padding: 12px 18px;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+            min-width: 150px;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: var(--neon-sub-glow);
+            margin-bottom: 5px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-family: 'Orbitron', sans-serif;
+            color: var(--neon-main-glow);
+            text-shadow: 0 0 5px var(--neon-main-glow);
+            display: block;
+            text-align: center;
+        }
+        
+        .progress-container {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            max-width: 600px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid var(--neon-sub-glow);
+            border-radius: 8px;
+            padding: 5px;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+            z-index: 10;
+        }
+        
+        .progress-bar {
+            height: 20px;
+            background: linear-gradient(90deg, #00ff00, #00ffff);
+            border-radius: 5px;
+            transition: width 0.3s ease;
+        }
+        
+        .instructions {
+            position: absolute;
+            top: 100px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid var(--neon-sub-glow);
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+            max-width: 300px;
+            z-index: 10;
+        }
+        
+        .instructions h3 {
+            color: var(--neon-main-glow);
+            font-family: 'Orbitron', sans-serif;
+            margin-top: 0;
+            text-align: center;
+            border-bottom: 1px solid var(--neon-sub-glow);
+            padding-bottom: 8px;
+            margin-bottom: 12px;
+        }
+        
+        .instructions p {
+            margin: 12px 0;
+            line-height: 1.5;
+        }
+        
+        .key {
+            display: inline-block;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid var(--neon-sub-glow);
+            border-radius: 4px;
+            padding: 4px 10px;
+            margin: 0 5px;
+            box-shadow: 0 0 5px rgba(0, 255, 255, 0.3);
+            font-family: 'Orbitron', sans-serif;
+            color: var(--neon-main-glow);
+        }
+        
+        .controls-section {
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px dashed var(--neon-sub-glow);
+        }
+        
+        .goal-section {
+            background: rgba(0, 100, 100, 0.3);
+            border-radius: 6px;
+            padding: 10px;
+            margin-top: 15px;
+        }
+        
+        @media (max-width: 768px) {
+            .level-title {
+                font-size: 28px;
+            }
+            
+            .level-subtitle {
+                font-size: 14px;
+            }
+            
+            .game-stats {
+                top: 80px;
+                left: 10px;
+            }
+            
+            .stat-box {
+                padding: 8px 12px;
+                min-width: 120px;
+            }
+            
+            .stat-value {
+                font-size: 20px;
+            }
+            
+            .instructions {
+                top: 80px;
+                right: 10px;
+                max-width: 250px;
+                font-size: 14px;
+                padding: 10px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .game-stats {
+                flex-direction: row;
+                top: 70px;
+                left: 50%;
+                transform: translateX(-50%);
+                gap: 10px;
+            }
+            
+            .instructions {
+                top: 150px;
+                left: 10px;
+                right: 10px;
+                max-width: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div class="game-header">
+            <div class="level-title">EMISSION ESCAPE</div>
+            <div class="level-subtitle">Dodge pollutants to save the environment</div>
+        </div>
+        
+        <div class="game-stats">
+            <div class="stat-box">
+                <div class="stat-label">SCORE</div>
+                <div id="score" class="stat-value">0</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">GOAL</div>
+                <div id="goal" class="stat-value">300</div>
+            </div>
+        </div>
+        
+        <canvas id="gameCanvas"></canvas>
+        
+        <div class="progress-container">
+            <div id="progress-bar" class="progress-bar"></div>
+        </div>
+        
+        <div class="instructions">
+            <h3>CONTROLS</h3>
+            <p><span class="key">←</span> <span class="key">→</span> : Move left and right</p>
+            <p><span class="key">SPACE</span> / <span class="key">↑</span> : Jump to avoid pollutants</p>
+            
+            <div class="controls-section">
+                <p>Avoid the pollutants to earn points!</p>
+            </div>
+            
+            <div class="goal-section">
+                <p>Collect <strong>300 points</strong> to win!</p>
+                <p>Each avoided pollutant gives you 10 points</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const canvas = document.getElementById('gameCanvas');
+            const ctx = canvas.getContext('2d');
+            const scoreElement = document.getElementById('score');
+            const goalElement = document.getElementById('goal');
+            const progressBar = document.getElementById('progress-bar');
+
+            // Set canvas dimensions to fill the window
+            canvas.width = window.innerWidth * 0.9;
+            canvas.height = window.innerHeight * 0.7;
+
+            // --- Game Constants ---
+            const GRAVITY = 0.5;
+            const PLAYER_SPEED = 5;
+            const JUMP_STRENGTH = -15;
+            const GROUND_HEIGHT = 50;
+
+            // Enemy spawning and speed constants
+            const BASE_ENEMY_SPEED = 3;
+            const MAX_ENEMY_SPEED = 10;
+            const SPEED_INCREASE_RATE = 0.005;
+            const BASE_SPAWN_INTERVAL = 1500;
+            const SPAWN_INTERVAL_VARIATION = 500;
+            const MIN_SPAWN_INTERVAL = 700;
+            const INTERVAL_DECREASE_RATE = 0.01;
+            const WIN_SCORE = 300; // Changed from 100 to 300
+
+            // --- Game State Variables ---
+            let player;
+            let enemies = [];
+            let score = 0;
+            let pollutantsDodged = 0;
+            let lastEnemySpawnTime = 0;
+            let animationFrameId;
+
+            // Dynamic difficulty variables
+            let currentEnemySpeed;
+            let currentSpawnInterval;
+
+            // --- Theme Variables ---
+            let playerColor, enemySmokeColor, enemyPlasticColor, groundColor, uiTextColor;
+
+            function updateThemeColors() {
+                playerColor = '#00ff00';
+                enemySmokeColor = '#ff00ff';
+                enemyPlasticColor = '#00ffff';
+                groundColor = '#333333';
+                uiTextColor = '#ffffff';
+            }
+
+            // --- Player Class ---
+            class Player {
+                constructor() {
+                    // Position
+                    this.x = 50;
+                    this.y = canvas.height - GROUND_HEIGHT;
+                    this.velocityY = 0;
+                    this.isJumping = false;
+                    this.dx = 0;
+                    this.width = 60;
+                    this.height = 80;
+                    this.y = canvas.height - GROUND_HEIGHT - this.height;
+                }
+
+                draw() {
+                    // Draw player with neon glow
+                    ctx.shadowBlur = 20;
+                    ctx.shadowColor = 'rgba(0, 255, 64, 0.8)';
+                    ctx.fillStyle = playerColor;
+                    ctx.fillRect(this.x, this.y, this.width, this.height);
+                    
+                    // Draw player head
+                    ctx.beginPath();
+                    ctx.arc(this.x + this.width / 2, this.y - 10, 10, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Draw eco warrior details
+                    ctx.fillStyle = '#00cc00';
+                    ctx.fillRect(this.x + 15, this.y + 15, 30, 30);
+                    ctx.fillStyle = '#00ff00';
+                    ctx.fillRect(this.x + 20, this.y + 20, 20, 20);
+                    
+                    ctx.shadowBlur = 0;
+                }
+
+                update() {
+                    // Apply horizontal movement
+                    this.x += this.dx;
+
+                    // Keep player within canvas bounds
+                    if (this.x < 0) this.x = 0;
+                    if (this.x + this.width > canvas.width) this.x = canvas.width - this.width;
+
+                    // Apply gravity
+                    this.velocityY += GRAVITY;
+                    this.y += this.velocityY;
+
+                    // Ground collision
+                    if (this.y + this.height > canvas.height - GROUND_HEIGHT) {
+                        this.y = canvas.height - GROUND_HEIGHT - this.height;
+                        this.velocityY = 0;
+                        this.isJumping = false;
+                    }
+                }
+
+                jump() {
+                    if (!this.isJumping) {
+                        this.velocityY = JUMP_STRENGTH;
+                        this.isJumping = true;
+                    }
+                }
+            }
+
+            // --- Enemy Class ---
+            class Enemy {
+                constructor(type, speed) {
+                    this.type = type;
+                    this.width = 40;
+                    this.height = 40;
+                    this.x = canvas.width;
+                    this.y = this.getRandomYPosition();
+                    this.speed = speed;
+                }
+
+                getRandomYPosition() {
+                    if (this.type === 'smoke') {
+                        return Math.random() * (canvas.height * 0.5 - 60) + 60;
+                    } else {
+                        return canvas.height - GROUND_HEIGHT - this.height;
+                    }
+                }
+
+                draw() {
+                    // Add glow effect based on enemy type
+                    if (this.type === 'smoke') {
+                        ctx.shadowBlur = 15;
+                        ctx.shadowColor = 'rgba(255, 0, 170, 0.8)';
+                        ctx.fillStyle = enemySmokeColor;
+                        ctx.beginPath();
+                        ctx.arc(this.x + this.width / 2, this.y + this.height / 2, this.width / 2, 0, Math.PI * 2);
+                        ctx.fill();
+                        
+                        // Add smoke details
+                        ctx.fillStyle = '#ff66ff';
+                        ctx.beginPath();
+                        ctx.arc(this.x + this.width / 2 - 8, this.y + this.height / 2 - 8, 6, 0, Math.PI * 2);
+                        ctx.fill();
+                    } 
+                    else if (this.type === 'plastic') {
+                        ctx.shadowBlur = 15;
+                        ctx.shadowColor = 'rgba(0, 200, 255, 0.8)';
+                        ctx.fillStyle = enemyPlasticColor;
+                        ctx.fillRect(this.x, this.y, this.width, this.height);
+                        
+                        // Add plastic details
+                        ctx.fillStyle = '#00aaff';
+                        ctx.fillRect(this.x + 5, this.y + 5, this.width - 10, this.height - 10);
+                    } 
+                    else if (this.type === 'bottle') {
+                        ctx.shadowBlur = 15;
+                        ctx.shadowColor = 'rgba(0, 200, 255, 0.8)';
+                        ctx.fillStyle = enemyPlasticColor;
+                        ctx.beginPath();
+                        ctx.rect(this.x, this.y + this.height * 0.25, this.width, this.height * 0.75);
+                        ctx.rect(this.x + this.width * 0.25, this.y, this.width * 0.5, this.height * 0.25);
+                        ctx.fill();
+                        
+                        // Add bottle details
+                        ctx.fillStyle = '#00aaff';
+                        ctx.fillRect(this.x + 10, this.y + this.height * 0.25 + 5, this.width - 20, this.height * 0.75 - 10);
+                    }
+                    
+                    ctx.shadowBlur = 0;
+                }
+
+                update() {
+                    this.x -= this.speed;
+                }
+            }
+
+            // --- Collision Detection ---
+            function checkCollision(obj1, obj2) {
+                return obj1.x < obj2.x + obj2.width &&
+                       obj1.x + obj1.width > obj2.x &&
+                       obj1.y < obj2.y + obj2.height &&
+                       obj1.y + obj1.height > obj2.y;
+            }
+
+            // --- Game Initialization ---
+            function initGame() {
+                player = new Player();
+                enemies = [];
+                score = 0;
+                pollutantsDodged = 0;
+                lastEnemySpawnTime = 0;
+                currentEnemySpeed = BASE_ENEMY_SPEED;
+                currentSpawnInterval = BASE_SPAWN_INTERVAL;
+                updateThemeColors();
+                scoreElement.textContent = score;
+                goalElement.textContent = WIN_SCORE;
+                progressBar.style.width = '0%';
+                if (animationFrameId) {
+                    cancelAnimationFrame(animationFrameId);
+                }
+                gameLoop(0);
+            }
+            
+            function updateUI() {
+                scoreElement.textContent = score;
+                progressBar.style.width = `${Math.min(100, (score / WIN_SCORE) * 100)}%`;
+            }
+
+            // --- Game Loop ---
+            function gameLoop(currentTime) {
+                // Clear canvas
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // Draw background grid
+                ctx.strokeStyle = '#666666';
+                ctx.lineWidth = 1;
+                for (let i = 0; i < canvas.width; i += 50) {
+                    ctx.beginPath();
+                    ctx.moveTo(i, 0);
+                    ctx.lineTo(i, canvas.height);
+                    ctx.stroke();
+                }
+                for (let i = 0; i < canvas.height; i += 50) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, i);
+                    ctx.lineTo(canvas.width, i);
+                    ctx.stroke();
+                }
+
+                // Draw ground with neon effect
+                ctx.fillStyle = groundColor;
+                ctx.fillRect(0, canvas.height - GROUND_HEIGHT, canvas.width, GROUND_HEIGHT);
+                
+                // Draw ground glow
+                ctx.strokeStyle = 'rgba(0, 255, 255, 0.7)';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(0, canvas.height - GROUND_HEIGHT);
+                ctx.lineTo(canvas.width, canvas.height - GROUND_HEIGHT);
+                ctx.stroke();
+
+                // Update and draw player
+                player.update();
+                player.draw();
+
+                // Gradually increase difficulty
+                currentEnemySpeed = Math.min(MAX_ENEMY_SPEED, BASE_ENEMY_SPEED + score * SPEED_INCREASE_RATE);
+                currentSpawnInterval = Math.max(MIN_SPAWN_INTERVAL, BASE_SPAWN_INTERVAL - score * INTERVAL_DECREASE_RATE);
+
+                // Spawn enemies
+                const randomInterval = currentSpawnInterval + (Math.random() * SPAWN_INTERVAL_VARIATION * 2) - SPAWN_INTERVAL_VARIATION;
+                if (currentTime - lastEnemySpawnTime > randomInterval) {
+                    const enemyTypes = ['smoke', 'plastic', 'bottle'];
+                    const randomType = enemyTypes[Math.floor(Math.random() * enemyTypes.length)];
+                    enemies.push(new Enemy(randomType, currentEnemySpeed));
+                    lastEnemySpawnTime = currentTime;
+                }
+
+                // Update and draw enemies
+                let collisionDetected = false;
+                for (let i = enemies.length - 1; i >= 0; i--) {
+                    const enemy = enemies[i];
+                    enemy.update();
+                    enemy.draw();
+
+                    // Remove enemies off-screen
+                    if (enemy.x + enemy.width < 0) {
+                        enemies.splice(i, 1);
+                        pollutantsDodged++;
+                        score += 10;
+                        updateUI();
+                    }
+
+                    // Check for collision with player
+                    if (checkCollision(player, enemy)) {
+                        collisionDetected = true;
+                    }
+                }
+
+                // Handle collision
+                if (collisionDetected) {
+                    cancelAnimationFrame(animationFrameId);
+                    window.location.href = 'Level 1 Lose.html';
+                    return;
+                }
+
+                // Handle win condition
+                if (score >= WIN_SCORE) {
+                    cancelAnimationFrame(animationFrameId);
+                    window.location.href = 'Level 1 win.html';
+                    return;
+                }
+
+                // Request next frame
+                animationFrameId = requestAnimationFrame(gameLoop);
+            }
+
+            // --- Event Listeners ---
+            let keys = {};
+            document.addEventListener('keydown', (e) => {
+                keys[e.key] = true;
+                if (e.key === 'ArrowUp' || e.key === ' ') {
+                    player.jump();
+                }
+            });
+
+            document.addEventListener('keyup', (e) => {
+                keys[e.key] = false;
+            });
+
+            function handlePlayerMovement() {
+                player.dx = 0;
+                if (keys['ArrowLeft']) {
+                    player.dx = -PLAYER_SPEED;
+                }
+                if (keys['ArrowRight']) {
+                    player.dx = PLAYER_SPEED;
+                }
+            }
+
+            // Update player movement
+            const originalPlayerUpdate = Player.prototype.update;
+            Player.prototype.update = function() {
+                handlePlayerMovement();
+                originalPlayerUpdate.apply(this, arguments);
+            };
+
+            // Handle window resizing
+            window.addEventListener('resize', () => {
+                canvas.width = window.innerWidth * 0.9;
+                canvas.height = window.innerHeight * 0.7;
+                player.y = canvas.height - GROUND_HEIGHT - player.height;
+            });
+
+            // Start the game
+            initGame();
+        });
+    </script>
+</body>
+</html>

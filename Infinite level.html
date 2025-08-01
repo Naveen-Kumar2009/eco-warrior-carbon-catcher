@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eco Warrior - The Carbon Catcher</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color-dark: #0d0d1a;
+            --bg-gradient-start-dark: #0d0d1a;
+            --bg-gradient-end-dark: #000000;
+            --text-color-dark: #e0e0e0;
+            --menu-bg-dark: rgba(0, 0, 0, 0.4);
+            --menu-shadow-dark: rgba(0, 255, 255, 0.3);
+            --button-bg-dark: rgba(0, 255, 255, 0.1);
+            --button-border-dark: #00ffff;
+            --button-text-dark: #00ffff;
+            --button-shadow-dark: #00ffff;
+            --neon-main-glow: #0fa;
+            --neon-sub-glow: #0ff;
+            --neon-car-color: #00ffcc;
+            --neon-smoke-color: #ff00ff;
+            --neon-bird-color: #ffff00;
+            --city-glow-color: rgba(0, 255, 255, 0.5);
+            --level1-bg-dark: #1a1a2e;
+            --level1-bg-light: #e0f2f7;
+            
+            --player-color: #00ff00;
+            --enemy-smoke-color: #ff00ff;
+            --enemy-plastic-color: #00ffff;
+            --ground-color: #333333;
+            --ui-text-color: #ffffff;
+            --game-over-text-color: #ff0000;
+            --game-win-text-color: #00ff00;
+        }
+
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color-dark);
+            color: var(--text-color-dark);
+            transition: background-color 0.5s ease, color 0.5s ease;
+        }
+
+        #game-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(180deg, var(--bg-gradient-start-dark) 0%, var(--bg-gradient-end-dark) 100%);
+            transition: background 0.5s ease;
+        }
+
+        .game-scene {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        .game-scene.active {
+            display: block;
+            opacity: 1;
+        }
+
+        #level-1-game {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: var(--level1-bg-dark);
+        }
+
+        #gameCanvas {
+            border: 2px solid var(--neon-main-glow);
+            box-shadow: 0 0 15px var(--neon-main-glow);
+            background-color: var(--level1-bg-dark);
+            transition: background-color 0.5s ease, border-color 0.5s ease, box-shadow 0.5s ease;
+        }
+
+        .instructions {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 20px;
+            border-radius: 10px;
+            text-align: center;
+            color: var(--neon-main-glow);
+            font-size: 14px;
+            border: 1px solid var(--neon-main-glow);
+            box-shadow: 0 0 10px var(--neon-main-glow);
+            z-index: 10;
+        }
+        
+        .score-display {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 24px;
+            color: var(--neon-main-glow);
+            text-shadow: 0 0 5px var(--neon-main-glow);
+            z-index: 10;
+        }
+        
+        .goal-display {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 24px;
+            color: var(--neon-main-glow);
+            text-shadow: 0 0 5px var(--neon-main-glow);
+            z-index: 10;
+        }
+        
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: var(--neon-main-glow);
+            font-size: 24px;
+            text-align: center;
+            text-shadow: 0 0 10px var(--neon-main-glow);
+            z-index: 15;
+        }
+
+        @media (max-width: 768px) {
+            #gameCanvas {
+                width: 95%;
+                height: auto;
+            }
+            
+            .instructions {
+                font-size: 12px;
+                padding: 8px 16px;
+                bottom: 10px;
+            }
+            
+            .score-display, .goal-display {
+                font-size: 18px;
+                top: 10px;
+            }
+            
+            .loading {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div id="level-1-game" class="game-scene active">
+            <div class="score-display">SCORE: <span id="score">0</span></div>
+            <div class="goal-display">GOAL: <span id="goal">100</span></div>
+            <canvas id="gameCanvas"></canvas>
+            <div class="instructions">Use ← → to move and SPACE to jump</div>
+            <div id="loading" class="loading">Loading player...</div>
+            
+            <!-- The GIF element that will be animated by the browser -->
+            <img id="player-gif" src="Level 1 Player.gif" style="display: none;">
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreElement = document.getElementById('score');
+        const goalElement = document.getElementById('goal');
+        const loadingElement = document.getElementById('loading');
+        const playerGifElement = document.getElementById('player-gif');
+
+        // Set canvas dimensions to fill the window
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        // --- Game Constants ---
+        const GRAVITY = 0.5;
+        const PLAYER_SPEED = 5;
+        const JUMP_STRENGTH = -15;
+        const GROUND_HEIGHT = 50;
+
+        // Enemy spawning and speed constants
+        const BASE_ENEMY_SPEED = 3;
+        const MAX_ENEMY_SPEED = 10;
+        const SPEED_INCREASE_RATE = 0.005;
+        const BASE_SPAWN_INTERVAL = 1500;
+        const SPAWN_INTERVAL_VARIATION = 500;
+        const MIN_SPAWN_INTERVAL = 700;
+        const INTERVAL_DECREASE_RATE = 0.01;
+        const WIN_SCORE = 100;
+
+        // --- Game State Variables ---
+        let player;
+        let enemies = [];
+        let score = 0;
+        let pollutantsDodged = 0;
+        let lastEnemySpawnTime = 0;
+        let animationFrameId;
+        let assetsLoaded = false;
+
+        // Dynamic difficulty variables
+        let currentEnemySpeed;
+        let currentSpawnInterval;
+
+        // --- Theme Variables ---
+        let playerColor, enemySmokeColor, enemyPlasticColor, groundColor, uiTextColor;
+
+        function updateThemeColors() {
+            const style = getComputedStyle(document.body);
+            playerColor = style.getPropertyValue('--player-color').trim();
+            enemySmokeColor = style.getPropertyValue('--enemy-smoke-color').trim();
+            enemyPlasticColor = style.getPropertyValue('--enemy-plastic-color').trim();
+            groundColor = style.getPropertyValue('--ground-color').trim();
+            uiTextColor = style.getPropertyValue('--ui-text-color').trim();
+        }
+
+        // --- Player Class ---
+        class Player {
+            constructor() {
+                // Position
+                this.x = 50;
+                this.y = canvas.height - GROUND_HEIGHT;
+                this.velocityY = 0;
+                this.isJumping = false;
+                this.dx = 0;
+                
+                // Animation properties
+                this.width = 60;
+                this.height = 80;
+                this.animationReady = false;
+                
+                // Show loading indicator
+                loadingElement.style.display = 'block';
+                
+                // Check if the image is already loaded (cached)
+                if (playerGifElement.complete) {
+                    this.handleImageLoad();
+                } else {
+                    // When the GIF is loaded
+                    playerGifElement.onload = () => this.handleImageLoad();
+                    playerGifElement.onerror = () => {
+                        console.error('Failed to load player GIF');
+                        loadingElement.textContent = 'Error loading player! Using fallback';
+                        // We'll use the fallback drawing
+                        this.animationReady = false;
+                        assetsLoaded = true;
+                        loadingElement.style.display = 'none';
+                    };
+                }
+            }
+            
+            handleImageLoad() {
+                this.animationReady = true;
+                loadingElement.style.display = 'none';
+                assetsLoaded = true;
+                
+                // Set dimensions based on GIF aspect ratio
+                const aspectRatio = playerGifElement.naturalWidth / playerGifElement.naturalHeight;
+                this.width = 60; 
+                this.height = this.width / aspectRatio;
+                this.y = canvas.height - GROUND_HEIGHT - this.height;
+            }
+
+            draw() {
+                if (this.animationReady) {
+                    // Draw the current frame of the animated GIF
+                    ctx.drawImage(playerGifElement, this.x, this.y, this.width, this.height);
+                } else {
+                    // Fallback to original drawing
+                    ctx.fillStyle = playerColor;
+                    ctx.fillRect(this.x, this.y, this.width, this.height);
+                    ctx.beginPath();
+                    ctx.arc(this.x + this.width / 2, this.y - 10, 10, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            update() {
+                // Apply horizontal movement
+                this.x += this.dx;
+
+                // Keep player within canvas bounds
+                if (this.x < 0) this.x = 0;
+                if (this.x + this.width > canvas.width) this.x = canvas.width - this.width;
+
+                // Apply gravity
+                this.velocityY += GRAVITY;
+                this.y += this.velocityY;
+
+                // Ground collision
+                if (this.y + this.height > canvas.height - GROUND_HEIGHT) {
+                    this.y = canvas.height - GROUND_HEIGHT - this.height;
+                    this.velocityY = 0;
+                    this.isJumping = false;
+                }
+            }
+
+            jump() {
+                if (!this.isJumping) {
+                    this.velocityY = JUMP_STRENGTH;
+                    this.isJumping = true;
+                }
+            }
+        }
+
+        // --- Enemy Class ---
+        class Enemy {
+            constructor(type, speed) {
+                this.type = type;
+                this.width = 40;
+                this.height = 40;
+                this.x = canvas.width;
+                this.y = this.getRandomYPosition();
+                this.speed = speed;
+            }
+
+            getRandomYPosition() {
+                if (this.type === 'smoke') {
+                    return Math.random() * (canvas.height * 0.5 - 60) + 60;
+                } else {
+                    return canvas.height - GROUND_HEIGHT - this.height;
+                }
+            }
+
+            draw() {
+                if (this.type === 'smoke') {
+                    ctx.fillStyle = enemySmokeColor;
+                    ctx.beginPath();
+                    ctx.arc(this.x + this.width / 2, this.y + this.height / 2, this.width / 2, 0, Math.PI * 2);
+                    ctx.fill();
+                } else if (this.type === 'plastic') {
+                    ctx.fillStyle = enemyPlasticColor;
+                    ctx.fillRect(this.x, this.y, this.width, this.height);
+                } else if (this.type === 'bottle') {
+                    ctx.fillStyle = enemyPlasticColor;
+                    ctx.beginPath();
+                    ctx.rect(this.x, this.y + this.height * 0.25, this.width, this.height * 0.75);
+                    ctx.rect(this.x + this.width * 0.25, this.y, this.width * 0.5, this.height * 0.25);
+                    ctx.fill();
+                }
+            }
+
+            update() {
+                this.x -= this.speed;
+            }
+        }
+
+        // --- Collision Detection ---
+        function checkCollision(obj1, obj2) {
+            return obj1.x < obj2.x + obj2.width &&
+                   obj1.x + obj1.width > obj2.x &&
+                   obj1.y < obj2.y + obj2.height &&
+                   obj1.y + obj1.height > obj2.y;
+        }
+
+        // --- Game Initialization ---
+        function initGame() {
+            player = new Player();
+            enemies = [];
+            score = 0;
+            pollutantsDodged = 0;
+            lastEnemySpawnTime = 0;
+            currentEnemySpeed = BASE_ENEMY_SPEED;
+            currentSpawnInterval = BASE_SPAWN_INTERVAL;
+            updateThemeColors();
+            scoreElement.textContent = score;
+            goalElement.textContent = WIN_SCORE;
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+            }
+            
+            // Start the game loop only after assets are loaded
+            const checkAssets = setInterval(() => {
+                if (assetsLoaded) {
+                    clearInterval(checkAssets);
+                    gameLoop(0);
+                }
+            }, 100);
+        }
+
+        // --- Game Loop ---
+        function gameLoop(currentTime) {
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw ground
+            ctx.fillStyle = groundColor;
+            ctx.fillRect(0, canvas.height - GROUND_HEIGHT, canvas.width, GROUND_HEIGHT);
+
+            // Draw background elements
+            drawBackground();
+
+            // Update and draw player
+            player.update();
+            player.draw();
+
+            // Gradually increase difficulty
+            currentEnemySpeed = Math.min(MAX_ENEMY_SPEED, BASE_ENEMY_SPEED + score * SPEED_INCREASE_RATE);
+            currentSpawnInterval = Math.max(MIN_SPAWN_INTERVAL, BASE_SPAWN_INTERVAL - score * INTERVAL_DECREASE_RATE);
+
+            // Spawn enemies
+            const randomInterval = currentSpawnInterval + (Math.random() * SPAWN_INTERVAL_VARIATION * 2) - SPAWN_INTERVAL_VARIATION;
+            if (currentTime - lastEnemySpawnTime > randomInterval) {
+                const enemyTypes = ['smoke', 'plastic', 'bottle'];
+                const randomType = enemyTypes[Math.floor(Math.random() * enemyTypes.length)];
+                enemies.push(new Enemy(randomType, currentEnemySpeed));
+                lastEnemySpawnTime = currentTime;
+            }
+
+            // Update and draw enemies
+            let collisionDetected = false;
+            for (let i = enemies.length - 1; i >= 0; i--) {
+                const enemy = enemies[i];
+                enemy.update();
+                enemy.draw();
+
+                // Remove enemies off-screen
+                if (enemy.x + enemy.width < 0) {
+                    enemies.splice(i, 1);
+                    pollutantsDodged++;
+                    score += 10;
+                    scoreElement.textContent = score;
+                }
+
+                // Check for collision with player
+                if (checkCollision(player, enemy)) {
+                    collisionDetected = true;
+                }
+            }
+
+            // Handle collision
+            if (collisionDetected) {
+                cancelAnimationFrame(animationFrameId);
+                window.location.href = 'Level 1 Lose.html';
+                return;
+            }
+
+            // Handle win condition
+            if (score >= WIN_SCORE) {
+                cancelAnimationFrame(animationFrameId);
+                window.location.href = 'Level 1 win.html';
+                return;
+            }
+
+            // Request next frame
+            animationFrameId = requestAnimationFrame(gameLoop);
+        }
+        
+        // Draw background elements
+        function drawBackground() {
+            // Draw stars
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+            for (let i = 0; i < 100; i++) {
+                const x = Math.random() * canvas.width;
+                const y = Math.random() * (canvas.height - GROUND_HEIGHT - 100);
+                const radius = Math.random() * 1.5;
+                ctx.beginPath();
+                ctx.arc(x, y, radius, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Draw mountains
+            ctx.fillStyle = '#1a2e3a';
+            ctx.beginPath();
+            ctx.moveTo(0, canvas.height - GROUND_HEIGHT);
+            for (let i = 0; i < canvas.width; i += 50) {
+                const height = 80 + Math.random() * 70;
+                ctx.lineTo(i, canvas.height - GROUND_HEIGHT - height);
+            }
+            ctx.lineTo(canvas.width, canvas.height - GROUND_HEIGHT);
+            ctx.fill();
+        }
+
+        // --- Event Listeners ---
+        let keys = {};
+        document.addEventListener('keydown', (e) => {
+            keys[e.key] = true;
+            if (e.key === 'ArrowUp' || e.key === ' ') {
+                player.jump();
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            keys[e.key] = false;
+        });
+
+        function handlePlayerMovement() {
+            player.dx = 0;
+            if (keys['ArrowLeft']) {
+                player.dx = -PLAYER_SPEED;
+            }
+            if (keys['ArrowRight']) {
+                player.dx = PLAYER_SPEED;
+            }
+        }
+
+        // Update player movement
+        const originalPlayerUpdate = Player.prototype.update;
+        Player.prototype.update = function() {
+            handlePlayerMovement();
+            originalPlayerUpdate.apply(this, arguments);
+        };
+
+        // Handle window resizing
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            if (player) {
+                player.y = canvas.height - GROUND_HEIGHT - player.height;
+            }
+        });
+
+        // Start the game
+        initGame();
+    });
+    </script>
+</body>
+</html>

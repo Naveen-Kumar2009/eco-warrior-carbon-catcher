@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eco Warrior - The Carbon Catcher</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        /* Global Styles & Font Imports */
+        :root {
+            /* Dark Theme Variables */
+            --bg-color-dark: #0d0d1a;
+            --bg-gradient-start-dark: #0d0d1a;
+            --bg-gradient-end-dark: #000000;
+            --text-color-dark: #e0e0e0;
+            --menu-bg-dark: rgba(0, 0, 0, 0.4);
+            --menu-shadow-dark: rgba(0, 255, 255, 0.3);
+            --button-bg-dark: rgba(0, 255, 255, 0.1);
+            --button-border-dark: #00ffff;
+            --button-text-dark: #00ffff;
+            --button-shadow-dark: #00ffff;
+            --neon-main-glow: #0fa; /* Greenish-cyan */
+            --neon-sub-glow: #0ff; /* Cyan */
+            --neon-car-color: #00ffcc; /* Cyan neon */
+            --neon-smoke-color: #ff00ff; /* Magenta neon */
+            --neon-bird-color: #ffff00; /* Yellow neon */
+            --city-glow-color: rgba(0, 255, 255, 0.5);
+            --particle-color-1: #00ffcc;
+            --particle-color-2: #ff00ff;
+            --particle-color-3: #ffff00;
+        }
+
+        body.light-theme {
+            /* Light Theme Variables */
+            --bg-color-dark: #f0f0f0;
+            --bg-gradient-start-dark: #e0e0e0;
+            --bg-gradient-end-dark: #ffffff;
+            --text-color-dark: #333333;
+            --menu-bg-dark: rgba(255, 255, 255, 0.7);
+            --menu-shadow-dark: rgba(0, 0, 0, 0.1);
+            --button-bg-dark: rgba(0, 150, 136, 0.1);
+            --button-border-dark: #009688;
+            --button-text-dark: #009688;
+            --button-shadow-dark: rgba(0, 150, 136, 0.5);
+            --neon-main-glow: transparent;
+            --neon-sub-glow: transparent;
+            --neon-car-color: rgba(0,0,0,0.1);
+            --neon-smoke-color: rgba(0,0,0,0.1);
+            --neon-bird-color: rgba(0,0,0,0.1);
+            --city-glow-color: rgba(0,0,0,0.1);
+            --particle-color-1: rgba(0,0,0,0.1);
+            --particle-color-2: rgba(0,0,0,0.1);
+            --particle-color-3: rgba(0,0,0,0.1);
+        }
+
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color-dark);
+            color: var(--text-color-dark);
+            transition: background-color 0.5s ease, color 0.5s ease;
+        }
+
+        #game-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(180deg, var(--bg-gradient-start-dark) 0%, var(--bg-gradient-end-dark) 100%);
+            transition: background 0.5s ease;
+        }
+
+        .game-scene {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        .game-scene.active {
+            display: block;
+            opacity: 1;
+        }
+
+        /* --- Enhanced Background --- */
+        .dynamic-background {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            background: linear-gradient(45deg, #0d0d1a, #000, #001a33, #0d0d1a);
+            background-size: 300% 300%;
+            animation: gradientShift 20s ease infinite;
+            opacity: 0.7;
+            z-index: 0;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Enhanced City Container */
+        .background-city-container {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 60%;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Detailed City Skyline */
+        .city-skyline {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to top, var(--city-glow-color), rgba(0, 255, 255, 0));
+            mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 300"><path fill="%23000" d="M0 300L0 200Q50 180 100 200T200 160T300 190T400 150T500 180T600 140T700 170T800 130T900 160T1000 140L1000 300Z M0 300L0 220Q50 200 100 220T200 190T300 210T400 170T500 200T600 160T700 190T800 150T900 180T1000 160L1000 300Z M0 300L0 240Q50 220 100 240T200 210T300 230T400 190T500 220T600 180T700 210T800 170T900 200T1000 180L1000 300Z"/></svg>');
+            mask-size: cover;
+            mask-repeat: no-repeat;
+            animation: cityGlow 5s ease-in-out infinite alternate;
+            transition: filter 0.5s ease;
+        }
+
+        @keyframes cityGlow {
+            0% { filter: drop-shadow(0 0 5px var(--city-glow-color)) brightness(1); }
+            50% { filter: drop-shadow(0 0 15px var(--city-glow-color)) brightness(1.1); }
+            100% { filter: drop-shadow(0 0 10px var(--city-glow-color)) brightness(1); }
+        }
+
+        /* Enhanced Neon Car Animation */
+        .neon-car {
+            position: absolute;
+            bottom: 10%;
+            height: 5px;
+            background-color: var(--neon-car-color);
+            border-radius: 2px;
+            animation: moveNeonCar 15s linear infinite;
+            opacity: 0.7;
+            filter: drop-shadow(0 0 8px var(--neon-car-color));
+            transition: background-color 0.5s ease, filter 0.5s ease;
+            z-index: 3;
+        }
+
+        .car-1 {
+            width: 60px;
+            left: -10%;
+            animation-delay: 0s;
+        }
+
+        .car-2 {
+            width: 40px;
+            left: -30%;
+            animation-delay: 7s;
+        }
+
+        .car-3 {
+            width: 50px;
+            left: -15%;
+            animation-delay: 3s;
+            bottom: 15%;
+        }
+
+        @keyframes moveNeonCar {
+            0% { transform: translateX(-100vw); }
+            100% { transform: translateX(200vw); }
+        }
+
+        /* Enhanced Neon Smoke/Pollution Animation */
+        .neon-smoke {
+            position: absolute;
+            background-color: var(--neon-smoke-color);
+            border-radius: 50%;
+            filter: blur(2px) drop-shadow(0 0 5px var(--neon-smoke-color));
+            opacity: 0.6;
+            animation: riseNeonSmoke 10s ease-in-out infinite alternate;
+            transition: background-color 0.5s ease, filter 0.5s ease;
+            z-index: 2;
+        }
+
+        .smoke-1 {
+            width: 30px;
+            height: 30px;
+            bottom: 30%;
+            left: 20%;
+            animation-delay: 0s;
+        }
+
+        .smoke-2 {
+            width: 25px;
+            height: 25px;
+            bottom: 35%;
+            left: 70%;
+            animation-delay: 5s;
+        }
+
+        .smoke-3 {
+            width: 35px;
+            height: 35px;
+            bottom: 25%;
+            left: 45%;
+            animation-delay: 3s;
+        }
+
+        @keyframes riseNeonSmoke {
+            0% { transform: translateY(0) scale(1); opacity: 0.6; }
+            50% { opacity: 0.4; }
+            100% { transform: translateY(-150px) scale(1.5); opacity: 0.1; }
+        }
+
+        /* Enhanced Neon Bird/Particle Animation */
+        .neon-bird {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background-color: var(--neon-bird-color);
+            border-radius: 50%;
+            filter: drop-shadow(0 0 5px var(--neon-bird-color));
+            opacity: 0.8;
+            animation: flyNeonBird 20s linear infinite;
+            transition: background-color 0.5s ease, filter 0.5s ease;
+            z-index: 2;
+        }
+
+        .bird-1 {
+            top: 15%;
+            left: -5%;
+            animation-delay: 0s;
+        }
+
+        .bird-2 {
+            top: 25%;
+            left: -20%;
+            animation-delay: 10s;
+        }
+
+        .bird-3 {
+            top: 10%;
+            left: -15%;
+            animation-delay: 5s;
+        }
+
+        .bird-4 {
+            top: 30%;
+            left: -10%;
+            animation-delay: 15s;
+        }
+
+        @keyframes flyNeonBird {
+            0% { transform: translateX(-100vw) translateY(0); }
+            25% { transform: translateX(-50vw) translateY(50px); }
+            50% { transform: translateX(0vw) translateY(0); }
+            75% { transform: translateX(50vw) translateY(-50px); }
+            100% { transform: translateX(200vw) translateY(0); }
+        }
+
+        /* Interactive Particles */
+        #particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            pointer-events: none;
+            opacity: 0.5;
+            animation: float 15s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0); }
+            25% { transform: translate(20px, -20px); }
+            50% { transform: translate(-20px, 20px); }
+            75% { transform: translate(20px, 20px); }
+        }
+
+        /* --- Enhanced Menu UI Styling --- */
+        .menu-ui {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            width: 90%;
+            max-width: 450px;
+            padding: 30px;
+            background: var(--menu-bg-dark);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 30px var(--menu-shadow-dark), 0 0 60px rgba(0, 255, 255, 0.2);
+            transition: all 0.5s ease;
+            z-index: 10;
+            border: 1px solid rgba(0, 255, 255, 0.2);
+        }
+
+        .menu-ui:hover {
+            box-shadow: 0 0 40px var(--menu-shadow-dark), 0 0 80px rgba(0, 255, 255, 0.3);
+            transform: translate(-50%, -50%) scale(1.02);
+        }
+
+        /* Enhanced Neon Text Effect */
+        .neon-text {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(2.5em, 8vw, 4.5em);
+            color: var(--text-color-dark);
+            text-shadow:
+                0 0 7px var(--text-color-dark),
+                0 0 10px var(--text-color-dark),
+                0 0 21px var(--text-color-dark),
+                0 0 42px var(--neon-main-glow),
+                0 0 82px var(--neon-main-glow),
+                0 0 92px var(--neon-main-glow),
+                0 0 102px var(--neon-main-glow),
+                0 0 151px var(--neon-main-glow);
+            margin-bottom: 10px;
+            transition: text-shadow 0.5s ease, color 0.5s ease;
+            animation: textPulse 3s infinite alternate;
+            letter-spacing: 1px;
+        }
+
+        @keyframes textPulse {
+            0% { text-shadow: 
+                0 0 7px var(--text-color-dark),
+                0 0 10px var(--text-color-dark),
+                0 0 21px var(--text-color-dark),
+                0 0 42px var(--neon-main-glow),
+                0 0 82px var(--neon-main-glow),
+                0 0 92px var(--neon-main-glow),
+                0 0 102px var(--neon-main-glow),
+                0 0 151px var(--neon-main-glow);
+            }
+            100% { text-shadow: 
+                0 0 10px var(--text-color-dark),
+                0 0 15px var(--text-color-dark),
+                0 0 30px var(--text-color-dark),
+                0 0 60px var(--neon-main-glow),
+                0 0 120px var(--neon-main-glow),
+                0 0 130px var(--neon-main-glow),
+                0 0 150px var(--neon-main-glow),
+                0 0 200px var(--neon-main-glow);
+            }
+        }
+
+        a {
+            text-decoration: none;
+        }
+
+        a:link, a:visited {
+            color: inherit;
+        }
+
+        .neon-text-sub {
+            font-family: 'Inter', sans-serif;
+            font-size: clamp(1em, 3vw, 1.6em);
+            color: var(--text-color-dark);
+            text-shadow:
+                0 0 5px var(--text-color-dark),
+                0 0 10px var(--neon-sub-glow);
+            margin-top: 0;
+            margin-bottom: 40px;
+            transition: text-shadow 0.5s ease, color 0.5s ease;
+            letter-spacing: 0.5px;
+            animation: subtitleFloat 4s infinite ease-in-out;
+        }
+
+        @keyframes subtitleFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        /* Enhanced Neon Button Effect */
+        .neon-button {
+            display: block;
+            width: 80%;
+            max-width: 280px;
+            padding: 18px 25px;
+            margin: 25px auto;
+            background: var(--button-bg-dark);
+            color: var(--button-text-dark);
+            border: 2px solid var(--button-border-dark);
+            border-radius: 12px;
+            font-size: clamp(1em, 2.5vw, 1.3em);
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s ease-in-out;
+            box-shadow:
+                0 0 5px var(--button-shadow-dark),
+                0 0 10px var(--button-shadow-dark),
+                0 0 20px var(--button-shadow-dark),
+                0 0 40px var(--button-shadow-dark) inset;
+            position: relative;
+            overflow: hidden;
+            letter-spacing: 1px;
+            font-weight: 600;
+            z-index: 2;
+        }
+
+        .neon-button:hover {
+            background: rgba(0, 255, 255, 0.2);
+            color: #fff;
+            box-shadow:
+                0 0 10px var(--button-shadow-dark),
+                0 0 20px var(--button-shadow-dark),
+                0 0 30px var(--button-shadow-dark),
+                0 0 50px var(--button-shadow-dark),
+                0 0 80px var(--button-shadow-dark) inset;
+            transform: scale(1.05);
+        }
+
+        .neon-button:hover::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            animation: shine 1.5s infinite;
+        }
+
+        @keyframes shine {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .neon-button:active {
+            transform: scale(0.98);
+            box-shadow:
+                0 0 5px var(--button-shadow-dark),
+                0 0 10px var(--button-shadow-dark) inset;
+        }
+
+        /* Theme Toggle Button */
+        .neon-button.theme-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: auto;
+            padding: 10px 15px;
+            margin: 0;
+            background: rgba(255, 255, 0, 0.1);
+            color: #ffff00;
+            border: 2px solid #ffff00;
+            box-shadow:
+                0 0 5px #ffff00,
+                0 0 10px #ffff00,
+                0 0 20px #ffff00,
+                0 0 40px #ffff00 inset;
+            z-index: 10;
+        }
+
+        .neon-button.theme-toggle:hover {
+            background: rgba(255, 255, 0, 0.2);
+            color: #fff;
+            box-shadow:
+                0 0 10px #ffff00,
+                0 0 20px #ffff00,
+                0 0 30px #ffff00,
+                0 0 50px #ffff00,
+                0 0 80px #ffff00 inset;
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .menu-ui {
+                padding: 20px;
+                max-width: 85%;
+            }
+            .neon-text {
+                font-size: clamp(2em, 10vw, 3.8em);
+            }
+            .neon-text-sub {
+                font-size: clamp(0.9em, 4vw, 1.4em);
+            }
+            .neon-button {
+                padding: 15px 20px;
+                font-size: clamp(0.9em, 3.5vw, 1.2em);
+            }
+            .neon-button.theme-toggle {
+                top: 10px;
+                right: 10px;
+                padding: 8px 12px;
+                font-size: 0.9em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div class="dynamic-background"></div>
+        <div id="intro-page" class="game-scene active">
+            <div id="particles"></div>
+            <div class="background-city-container">
+                <div class="city-skyline"></div>
+                <div class="neon-car car-1"></div>
+                <div class="neon-car car-2"></div>
+                <div class="neon-car car-3"></div>
+                <div class="neon-smoke smoke-1"></div>
+                <div class="neon-smoke smoke-2"></div>
+                <div class="neon-smoke smoke-3"></div>
+                <div class="neon-bird bird-1"></div>
+                <div class="neon-bird bird-2"></div>
+                <div class="neon-bird bird-3"></div>
+                <div class="neon-bird bird-4"></div>
+            </div>
+            <div class="menu-ui">
+                <h1 class="neon-text">ECO WARRIOR</h1>
+                <h2 class="neon-text-sub">THE CARBON CATCHER</h2>
+                <a href="Level 1 intro.html">
+                    <button id="start-game-btn" class="neon-button">START MISSION</button>
+                </a>
+                <!-- <button id="theme-toggle-btn" class="neon-button theme-toggle">TOGGLE THEME</button> -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Get references to our buttons
+            const startGameBtn = document.getElementById('start-game-btn');
+            const themeToggleBtn = document.getElementById('theme-toggle-btn');
+            const body = document.body;
+            const particlesContainer = document.getElementById('particles');
+            
+            // Create interactive particles
+            function createParticles() {
+                const particleCount = 50;
+                const colors = [
+                    'var(--particle-color-1)', 
+                    'var(--particle-color-2)', 
+                    'var(--particle-color-3)'
+                ];
+                
+                for (let i = 0; i < particleCount; i++) {
+                    const particle = document.createElement('div');
+                    particle.classList.add('particle');
+                    
+                    // Random properties
+                    const size = Math.random() * 4 + 1;
+                    const color = colors[Math.floor(Math.random() * colors.length)];
+                    
+                    particle.style.width = `${size}px`;
+                    particle.style.height = `${size}px`;
+                    particle.style.background = color;
+                    particle.style.left = `${Math.random() * 100}%`;
+                    particle.style.top = `${Math.random() * 100}%`;
+                    particle.style.animationDuration = `${Math.random() * 10 + 10}s`;
+                    particle.style.animationDelay = `${Math.random() * 5}s`;
+                    
+                    particlesContainer.appendChild(particle);
+                }
+            }
+            
+            // Move particles with mouse
+            function moveParticles(e) {
+                const particles = document.querySelectorAll('.particle');
+                const mouseX = e.clientX / window.innerWidth;
+                const mouseY = e.clientY / window.innerHeight;
+                
+                particles.forEach(particle => {
+                    const speedX = (0.5 - mouseX) * 5;
+                    const speedY = (0.5 - mouseY) * 5;
+                    
+                    particle.style.transform = `translate(${speedX}px, ${speedY}px)`;
+                });
+            }
+            
+            // Initialize particles
+            createParticles();
+            
+            // Add event listeners
+            document.addEventListener('mousemove', moveParticles);
+            
+            startGameBtn.addEventListener('click', () => {
+                console.log('Start Game button clicked!');
+            });
+            
+            themeToggleBtn.addEventListener('click', () => {
+                body.classList.toggle('light-theme');
+                console.log('Theme toggled. Current theme:', body.classList.contains('light-theme') ? 'Light' : 'Dark');
+            });
+        });
+    </script>
+</body>
+</html>

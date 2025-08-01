@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eco Warrior - Level 2: Sky Defender</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        /* Global Styles */
+        :root {
+            /* Dark Theme Variables (Level 2 specific) */
+            --bg-color-dark: #00001a; /* Very dark blue/purple for sky */
+            --bg-gradient-start-dark: #00001a;
+            --bg-gradient-end-dark: #000000;
+            --text-color-dark: #e0e0e0;
+
+            /* Game element colors */
+            --player-color: #00ff00; /* Green defender */
+            --projectile-color: #00ffff; /* Cyan projectile */
+            --garbage-plastic-color: #ff00ff; /* Magenta plastic */
+            --garbage-smoke-color: #ffff00; /* Yellow smoke */
+            --ground-color: #333333; /* Dark grey ground */
+            --ui-text-color: #ffffff;
+            --game-over-text-color: #ff0000;
+            --game-win-text-color: #00ff00; /* Green for win */
+
+            /* Neon effects */
+            --neon-main-glow: #0fa; /* Greenish-cyan */
+            --neon-sub-glow: #0ff; /* Cyan */
+            --neon-player-glow: #00ff40;
+            --neon-projectile-glow: #00ffff;
+            --neon-plastic-glow: #ff00aa;
+            --neon-smoke-glow: #ffff00;
+        }
+
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0a0a2e, #0a1a3e, #001a40);
+            color: var(--text-color-dark);
+        }
+
+        #game-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #gameCanvas {
+            border: 3px solid var(--neon-main-glow);
+            box-shadow: 0 0 20px var(--neon-main-glow);
+            border-radius: 8px;
+            background-color: var(--bg-color-dark);
+        }
+        
+        /* Enhanced UI */
+        .game-header {
+            position: absolute;
+            top: 10px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            z-index: 10;
+        }
+        
+        .level-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 38px;
+            color: var(--neon-main-glow);
+            text-shadow: 0 0 15px var(--neon-main-glow);
+            letter-spacing: 2px;
+            margin-bottom: 5px;
+        }
+        
+        .level-subtitle {
+            font-family: 'Inter', sans-serif;
+            font-size: 16px;
+            color: var(--neon-sub-glow);
+            text-shadow: 0 0 10px var(--neon-sub-glow);
+            margin-bottom: 15px;
+        }
+        
+        .game-stats {
+            position: absolute;
+            top: 100px;
+            left: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            z-index: 10;
+        }
+        
+        .stat-box {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid var(--neon-sub-glow);
+            border-radius: 8px;
+            padding: 12px 18px;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+            min-width: 150px;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: var(--neon-sub-glow);
+            margin-bottom: 5px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-family: 'Orbitron', sans-serif;
+            color: var(--neon-main-glow);
+            text-shadow: 0 0 5px var(--neon-main-glow);
+            display: block;
+            text-align: center;
+        }
+        
+        .progress-container {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            max-width: 600px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid var(--neon-sub-glow);
+            border-radius: 8px;
+            padding: 5px;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+            z-index: 10;
+        }
+        
+        .progress-bar {
+            height: 20px;
+            background: linear-gradient(90deg, #00ff00, #00ffff);
+            border-radius: 5px;
+            transition: width 0.3s ease;
+        }
+        
+        .instructions {
+            position: absolute;
+            top: 100px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid var(--neon-sub-glow);
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+            max-width: 300px;
+            z-index: 10;
+        }
+        
+        .instructions h3 {
+            color: var(--neon-main-glow);
+            font-family: 'Orbitron', sans-serif;
+            margin-top: 0;
+            text-align: center;
+            border-bottom: 1px solid var(--neon-sub-glow);
+            padding-bottom: 8px;
+            margin-bottom: 12px;
+        }
+        
+        .instructions p {
+            margin: 12px 0;
+            line-height: 1.5;
+        }
+        
+        .key {
+            display: inline-block;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid var(--neon-sub-glow);
+            border-radius: 4px;
+            padding: 4px 10px;
+            margin: 0 5px;
+            box-shadow: 0 0 5px rgba(0, 255, 255, 0.3);
+            font-family: 'Orbitron', sans-serif;
+            color: var(--neon-main-glow);
+        }
+        
+        .controls-section {
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px dashed var(--neon-sub-glow);
+        }
+        
+        .goal-section {
+            background: rgba(0, 100, 100, 0.3);
+            border-radius: 6px;
+            padding: 10px;
+            margin-top: 15px;
+        }
+        
+        .stars {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .star {
+            position: absolute;
+            background-color: white;
+            border-radius: 50%;
+            animation: twinkle 3s infinite ease-in-out;
+        }
+        
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+        
+        @media (max-width: 768px) {
+            .level-title {
+                font-size: 28px;
+            }
+            
+            .level-subtitle {
+                font-size: 14px;
+            }
+            
+            .game-stats {
+                top: 80px;
+                left: 10px;
+            }
+            
+            .stat-box {
+                padding: 8px 12px;
+                min-width: 120px;
+            }
+            
+            .stat-value {
+                font-size: 20px;
+            }
+            
+            .instructions {
+                top: 80px;
+                right: 10px;
+                max-width: 250px;
+                font-size: 14px;
+                padding: 10px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .game-stats {
+                flex-direction: row;
+                top: 70px;
+                left: 50%;
+                transform: translateX(-50%);
+                gap: 10px;
+            }
+            
+            .instructions {
+                top: 150px;
+                left: 10px;
+                right: 10px;
+                max-width: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div class="game-header">
+            <div class="level-title">SKY DEFENDER</div>
+            <div class="level-subtitle">Protect the sky from pollution!</div>
+        </div>
+        
+        <!-- Stars background -->
+        <div class="stars" id="stars"></div>
+        
+        <div class="game-stats">
+            <div class="stat-box">
+                <div class="stat-label">SCORE</div>
+                <div id="score" class="stat-value">0</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">GOAL</div>
+                <div id="goal" class="stat-value">100</div>
+            </div>
+        </div>
+        
+        <canvas id="gameCanvas"></canvas>
+        
+        <div class="progress-container">
+            <div id="progress-bar" class="progress-bar"></div>
+        </div>
+        
+        <div class="instructions">
+            <h3>CONTROLS</h3>
+            <p><span class="key">←</span> <span class="key">→</span> : Move defender</p>
+            <p><span class="key">SPACE</span> : Fire projectiles</p>
+            
+            <div class="controls-section">
+                <p>Shoot down pollutants before they reach the ground!</p>
+            </div>
+            
+            <div class="goal-section">
+                <p>Collect <strong>100 points</strong> to win!</p>
+                <p>Each destroyed pollutant gives you 10 points</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const canvas = document.getElementById('gameCanvas');
+            const ctx = canvas.getContext('2d');
+            const scoreElement = document.getElementById('score');
+            const goalElement = document.getElementById('goal');
+            const progressBar = document.getElementById('progress-bar');
+            const starsContainer = document.getElementById('stars');
+
+            // Set canvas dimensions to fill the window
+            canvas.width = window.innerWidth * 0.9;
+            canvas.height = window.innerHeight * 0.7;
+
+            // Create stars for background
+            function createStars() {
+                starsContainer.innerHTML = '';
+                const starCount = Math.floor((canvas.width * canvas.height) / 1000);
+                for (let i = 0; i < starCount; i++) {
+                    const star = document.createElement('div');
+                    star.classList.add('star');
+                    star.style.width = `${Math.random() * 3}px`;
+                    star.style.height = star.style.width;
+                    star.style.left = `${Math.random() * 100}%`;
+                    star.style.top = `${Math.random() * 100}%`;
+                    star.style.animationDelay = `${Math.random() * 3}s`;
+                    starsContainer.appendChild(star);
+                }
+            }
+            
+            createStars();
+
+            // --- Game Constants ---
+            const PLAYER_WIDTH = 60;
+            const PLAYER_HEIGHT = 20;
+            const PLAYER_SPEED = 7;
+            const GROUND_HEIGHT = 50; // Height of the ground from the bottom
+
+            const PROJECTILE_WIDTH = 5;
+            const PROJECTILE_HEIGHT = 15;
+            const PROJECTILE_SPEED = 10;
+            const PROJECTILE_COOLDOWN = 300; // ms between shots
+
+            const GARBAGE_MIN_SIZE = 20;
+            const GARBAGE_MAX_SIZE = 40;
+            const GARBAGE_BASE_FALL_SPEED = 1;
+            const GARBAGE_MAX_FALL_SPEED = 5;
+            const FALL_SPEED_INCREASE_RATE = 0.01; // Increased speed increase rate
+
+            const GARBAGE_SPAWN_INTERVAL = 1800; // Increased base spawn interval (less frequent)
+            const GARBAGE_SPAWN_VARIATION = 700; // Increased variation
+            const GARBAGE_MIN_SPAWN_INTERVAL = 900; // Hard minimum interval to prevent overlaps
+            const INTERVAL_DECREASE_RATE = 0.01;
+
+            const WIN_SCORE = 100; // Score to win Level 2
+
+            // --- Game State Variables ---
+            let player;
+            let projectiles = [];
+            let garbage = []; // Falling pollution/garbage
+            let score = 0;
+            let gameTime = 0;
+            let lastFrameTime = 0;
+            let lastProjectileTime = 0;
+            let lastGarbageSpawnTime = 0;
+            let animationFrameId;
+
+            // Dynamic difficulty variables
+            let currentGarbageFallSpeed;
+            let currentGarbageSpawnInterval;
+
+            // --- Theme/Color Variables (Dynamically fetched from CSS) ---
+            let playerColor, projectileColor, garbagePlasticColor, garbageSmokeColor, groundColor, uiTextColor;
+
+            function updateThemeColors() {
+                playerColor = '#00ff00';
+                projectileColor = '#00ffff';
+                garbagePlasticColor = '#ff00ff';
+                garbageSmokeColor = '#ffff00';
+                groundColor = '#333333';
+                uiTextColor = '#ffffff';
+            }
+
+            // --- Player Class (The Shooter) ---
+            class Player {
+                constructor() {
+                    this.width = PLAYER_WIDTH;
+                    this.height = PLAYER_HEIGHT;
+                    this.x = (canvas.width / 2) - (this.width / 2); // Start in middle
+                    this.y = canvas.height - GROUND_HEIGHT - this.height;
+                    this.dx = 0; // Horizontal movement direction
+                }
+
+                draw() {
+                    // Draw player with neon glow
+                    ctx.shadowBlur = 20;
+                    ctx.shadowColor = 'rgba(0, 255, 64, 0.8)';
+                    ctx.fillStyle = playerColor;
+                    ctx.fillRect(this.x, this.y, this.width, this.height);
+                    
+                    // Draw turret
+                    ctx.beginPath();
+                    ctx.moveTo(this.x + this.width / 2, this.y);
+                    ctx.lineTo(this.x + this.width / 2 - 10, this.y - 20);
+                    ctx.lineTo(this.x + this.width / 2 + 10, this.y - 20);
+                    ctx.closePath();
+                    ctx.fill();
+                    
+                    // Draw details on player
+                    ctx.fillStyle = '#00cc00';
+                    ctx.fillRect(this.x + 15, this.y + 5, 30, 10);
+                    
+                    ctx.shadowBlur = 0;
+                }
+
+                update() {
+                    this.x += this.dx;
+                    // Keep player within canvas bounds
+                    if (this.x < 0) this.x = 0;
+                    if (this.x + this.width > canvas.width) this.x = canvas.width - this.width;
+                }
+
+                shoot() {
+                    if (gameTime - lastProjectileTime > PROJECTILE_COOLDOWN) {
+                        projectiles.push(new Projectile(this.x + this.width / 2, this.y));
+                        lastProjectileTime = gameTime;
+                    }
+                }
+            }
+
+            // --- Projectile Class ---
+            class Projectile {
+                constructor(x, y) {
+                    this.width = PROJECTILE_WIDTH;
+                    this.height = PROJECTILE_HEIGHT;
+                    this.x = x - (this.width / 2); // Center on player's turret
+                    this.y = y;
+                    this.speed = PROJECTILE_SPEED;
+                }
+
+                draw() {
+                    // Draw projectile with trail effect
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = 'rgba(0, 255, 255, 0.8)';
+                    ctx.fillStyle = projectileColor;
+                    ctx.fillRect(this.x, this.y, this.width, this.height);
+                    
+                    // Draw trail
+                    ctx.beginPath();
+                    ctx.moveTo(this.x + this.width/2, this.y + this.height);
+                    ctx.lineTo(this.x + this.width/2, this.y + this.height + 20);
+                    ctx.strokeStyle = projectileColor;
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                    
+                    ctx.shadowBlur = 0;
+                }
+
+                update() {
+                    this.y -= this.speed;
+                }
+            }
+
+            // --- Falling Garbage Class ---
+            class Garbage {
+                constructor(type, speed) {
+                    this.type = type; // 'plastic' or 'smoke'
+                    this.size = GARBAGE_MIN_SIZE + Math.random() * (GARBAGE_MAX_SIZE - GARBAGE_MIN_SIZE);
+                    this.width = this.size;
+                    this.height = this.size;
+                    this.x = Math.random() * (canvas.width - this.width); // Random X position at top
+                    this.y = -this.height; // Start above canvas
+                    this.speed = speed;
+                    this.rotation = Math.random() * Math.PI * 2;
+                    this.rotationSpeed = (Math.random() - 0.5) * 0.1;
+                }
+
+                draw() {
+                    ctx.save();
+                    ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
+                    ctx.rotate(this.rotation);
+                    
+                    if (this.type === 'plastic') {
+                        // Draw plastic bag with details
+                        ctx.shadowBlur = 15;
+                        ctx.shadowColor = 'rgba(255, 0, 170, 0.8)';
+                        ctx.fillStyle = garbagePlasticColor;
+                        ctx.beginPath();
+                        ctx.moveTo(-this.width/2, -this.height/2);
+                        ctx.lineTo(-this.width/4, this.height/2);
+                        ctx.lineTo(this.width/4, this.height/2);
+                        ctx.lineTo(this.width/2, -this.height/2);
+                        ctx.closePath();
+                        ctx.fill();
+                        
+                        // Draw details
+                        ctx.fillStyle = '#ff66ff';
+                        ctx.beginPath();
+                        ctx.arc(0, -this.height/4, this.width/4, 0, Math.PI * 2);
+                        ctx.fill();
+                    } 
+                    else if (this.type === 'smoke') {
+                        // Draw smoke with multiple particles
+                        ctx.shadowBlur = 20;
+                        ctx.shadowColor = 'rgba(255, 255, 0, 0.8)';
+                        ctx.fillStyle = garbageSmokeColor;
+                        
+                        // Main cloud
+                        ctx.beginPath();
+                        ctx.arc(0, 0, this.width/2, 0, Math.PI * 2);
+                        ctx.fill();
+                        
+                        // Smaller clouds
+                        ctx.beginPath();
+                        ctx.arc(-this.width/3, -this.height/4, this.width/4, 0, Math.PI * 2);
+                        ctx.fill();
+                        
+                        ctx.beginPath();
+                        ctx.arc(this.width/3, this.height/4, this.width/3, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    
+                    ctx.restore();
+                    ctx.shadowBlur = 0;
+                }
+
+                update() {
+                    this.y += this.speed;
+                    this.rotation += this.rotationSpeed;
+                }
+            }
+
+            // --- Collision Detection ---
+            function checkCollision(obj1, obj2) {
+                return obj1.x < obj2.x + obj2.width &&
+                       obj1.x + obj1.width > obj2.x &&
+                       obj1.y < obj2.y + obj2.height &&
+                       obj1.y + obj1.height > obj2.y;
+            }
+
+            // --- Game Initialization ---
+            function initGame() {
+                player = new Player();
+                projectiles = [];
+                garbage = [];
+                score = 0;
+                gameTime = 0;
+                lastFrameTime = 0;
+                lastProjectileTime = 0;
+                lastGarbageSpawnTime = 0;
+                
+                // Update UI
+                scoreElement.textContent = score;
+                goalElement.textContent = WIN_SCORE;
+                progressBar.style.width = '0%';
+
+                currentGarbageFallSpeed = GARBAGE_BASE_FALL_SPEED;
+                currentGarbageSpawnInterval = GARBAGE_SPAWN_INTERVAL;
+                updateThemeColors();
+
+                if (animationFrameId) {
+                    cancelAnimationFrame(animationFrameId);
+                }
+                animationFrameId = requestAnimationFrame(gameLoop); // Start the game loop
+            }
+            
+            function updateUI() {
+                scoreElement.textContent = score;
+                progressBar.style.width = `${Math.min(100, (score / WIN_SCORE) * 100)}%`;
+            }
+
+            // --- Game Loop ---
+            function gameLoop(currentTime) {
+                gameTime = currentTime;
+                const deltaTime = currentTime - lastFrameTime;
+                lastFrameTime = currentTime;
+
+                // Update difficulty based on score
+                currentGarbageFallSpeed = Math.min(GARBAGE_MAX_FALL_SPEED, GARBAGE_BASE_FALL_SPEED + score * FALL_SPEED_INCREASE_RATE);
+                currentGarbageSpawnInterval = Math.max(GARBAGE_MIN_SPAWN_INTERVAL, GARBAGE_SPAWN_INTERVAL - score * INTERVAL_DECREASE_RATE);
+
+                // Clear canvas
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // Draw background grid
+                ctx.strokeStyle = '#666666';
+                ctx.lineWidth = 1;
+                for (let i = 0; i < canvas.width; i += 50) {
+                    ctx.beginPath();
+                    ctx.moveTo(i, 0);
+                    ctx.lineTo(i, canvas.height);
+                    ctx.stroke();
+                }
+                for (let i = 0; i < canvas.height; i += 50) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, i);
+                    ctx.lineTo(canvas.width, i);
+                    ctx.stroke();
+                }
+
+                // Draw ground with neon glow
+                ctx.fillStyle = groundColor;
+                ctx.fillRect(0, canvas.height - GROUND_HEIGHT, canvas.width, GROUND_HEIGHT);
+                
+                // Draw ground glow
+                ctx.strokeStyle = 'rgba(0, 255, 255, 0.7)';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(0, canvas.height - GROUND_HEIGHT);
+                ctx.lineTo(canvas.width, canvas.height - GROUND_HEIGHT);
+                ctx.stroke();
+
+                // Update and draw player
+                player.update();
+                player.draw();
+
+                // Spawn garbage
+                if (currentTime - lastGarbageSpawnTime > (currentGarbageSpawnInterval + (Math.random() * GARBAGE_SPAWN_VARIATION * 2) - GARBAGE_SPAWN_VARIATION)) {
+                    const garbageTypes = ['plastic', 'smoke'];
+                    const randomType = garbageTypes[Math.floor(Math.random() * garbageTypes.length)];
+                    garbage.push(new Garbage(randomType, currentGarbageFallSpeed));
+                    lastGarbageSpawnTime = currentTime;
+                }
+
+                // Update and draw garbage
+                for (let i = garbage.length - 1; i >= 0; i--) {
+                    const item = garbage[i];
+                    item.update();
+                    item.draw();
+
+                    // Check if garbage hit the ground
+                    if (item.y + item.height > canvas.height - GROUND_HEIGHT) {
+                        // Pollution reached ground - game over
+                        cancelAnimationFrame(animationFrameId);
+                        window.location.href = 'Level 2 Lose.html';
+                        return;
+                    }
+                }
+
+                // Update and draw projectiles
+                for (let i = projectiles.length - 1; i >= 0; i--) {
+                    const projectile = projectiles[i];
+                    projectile.update();
+                    projectile.draw();
+
+                    // Remove projectiles off-screen
+                    if (projectile.y + projectile.height < 0) {
+                        projectiles.splice(i, 1);
+                    }
+
+                    // Check for collision between projectile and garbage
+                    for (let j = garbage.length - 1; j >= 0; j--) {
+                        const item = garbage[j];
+                        if (checkCollision(projectile, item)) {
+                            // Collision detected: remove both
+                            projectiles.splice(i, 1);
+                            garbage.splice(j, 1);
+                            score += 10; // Points for hitting garbage
+                            
+                            // Update UI
+                            updateUI();
+                            
+                            // Check win condition
+                            if (score >= WIN_SCORE) {
+                                cancelAnimationFrame(animationFrameId);
+                                window.location.href = 'Level 2 win.html';
+                                return;
+                            }
+                            
+                            // Adjust loop counters after splicing
+                            if (i > 0) i--;
+                            break; // Projectile can only hit one item
+                        }
+                    }
+                }
+
+                // Continue the game loop
+                animationFrameId = requestAnimationFrame(gameLoop);
+            }
+
+            // --- Event Listeners ---
+            let keys = {};
+            document.addEventListener('keydown', (e) => {
+                keys[e.key] = true;
+                if (e.key === 'ArrowLeft') {
+                    player.dx = -PLAYER_SPEED;
+                }
+                if (e.key === 'ArrowRight') {
+                    player.dx = PLAYER_SPEED;
+                }
+                if (e.key === ' ' || e.key === 'Spacebar') { // Spacebar to shoot
+                    player.shoot();
+                }
+            });
+
+            document.addEventListener('keyup', (e) => {
+                keys[e.key] = false;
+                if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                    player.dx = 0; // Stop horizontal movement on key release
+                }
+            });
+
+            // Handle window resizing
+            window.addEventListener('resize', () => {
+                canvas.width = window.innerWidth * 0.9;
+                canvas.height = window.innerHeight * 0.7;
+                // Re-position player on resize to keep it on the ground
+                player.y = canvas.height - GROUND_HEIGHT - player.height;
+                player.x = (canvas.width / 2) - (player.width / 2); // Re-center player
+                createStars();
+            });
+
+            // Start the game when the page loads
+            initGame();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eco Warrior - The Carbon Catcher</title>
+    <!-- Google Fonts for modern/neon look -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* Global Styles & Font Imports */
+        :root {
+            /* Dark Theme Variables */
+            --bg-color-dark: #0d0d1a;
+            --bg-gradient-start-dark: #0d0d1a;
+            --bg-gradient-end-dark: #000000;
+            --text-color-dark: #e0e0e0;
+            --menu-bg-dark: rgba(0, 0, 0, 0.4);
+            --menu-shadow-dark: rgba(0, 255, 255, 0.3);
+            --button-bg-dark: rgba(0, 255, 255, 0.1);
+            --button-border-dark: #00ffff;
+            --button-text-dark: #00ffff;
+            --button-shadow-dark: #00ffff;
+            --neon-main-glow: #0fa; /* Greenish-cyan */
+            --neon-sub-glow: #0ff; /* Cyan */
+            --neon-car-color: #00ffcc; /* Cyan neon */
+            --neon-smoke-color: #ff00ff; /* Magenta neon */
+            --neon-bird-color: #ffff00; /* Yellow neon */
+            --city-glow-color: rgba(0, 255, 255, 0.5);
+            --level1-bg-dark: url('https://placehold.co/1920x1080/1a1a2e/ffffff?text=Polluted+City+Background'); /* Placeholder for Level 1 dark theme */
+            --level1-bg-light: url('https://placehold.co/1920x1080/e0f2f7/333333?text=Clean+City+Background'); /* Placeholder for Level 1 light theme */
+        }
+
+        body.light-theme {
+            /* Light Theme Variables */
+            --bg-color-dark: #f0f0f0; /* Lighter background */
+            --bg-gradient-start-dark: #e0e0e0;
+            --bg-gradient-end-dark: #ffffff;
+            --text-color-dark: #333333; /* Darker text */
+            --menu-bg-dark: rgba(255, 255, 255, 0.7);
+            --menu-shadow-dark: rgba(0, 0, 0, 0.1);
+            --button-bg-dark: rgba(0, 150, 136, 0.1); /* Teal-ish */
+            --button-border-dark: #009688;
+            --button-text-dark: #009688;
+            --button-shadow-dark: rgba(0, 150, 136, 0.5); /* Subtle shadow for light theme */
+            --neon-main-glow: transparent; /* Neon effects reduced/removed in light theme */
+            --neon-sub-glow: transparent;
+            --neon-car-color: rgba(0,0,0,0.1); /* Less prominent */
+            --neon-smoke-color: rgba(0,0,0,0.1);
+            --neon-bird-color: rgba(0,0,0,0.1);
+            --city-glow-color: rgba(0,0,0,0.1);
+        }
+
+        body {
+            margin: 0;
+            overflow: hidden; /* Prevent scrollbars */
+            font-family: 'Inter', sans-serif; /* Default font */
+            background-color: var(--bg-color-dark);
+            color: var(--text-color-dark);
+            transition: background-color 0.5s ease, color 0.5s ease;
+        }
+
+        #game-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(180deg, var(--bg-gradient-start-dark) 0%, var(--bg-gradient-end-dark) 100%);
+            transition: background 0.5s ease;
+        }
+
+        .game-scene {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: none; /* Hidden by default */
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        .game-scene.active {
+            display: block; /* Show active scene */
+            opacity: 1;
+        }
+
+        /* --- Background City Container & Elements (Intro Page) --- */
+        .background-city-container {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 60%; /* Occupy bottom part of the screen */
+            overflow: hidden;
+            pointer-events: none; /* Allow clicks to pass through to UI */
+        }
+
+        .city-skyline {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to top, var(--city-glow-color), rgba(0, 255, 255, 0)); /* Subtle base glow */
+            mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 300"><path fill="#000" d="M0 300L0 150Q50 100 100 150T200 100T300 150T400 100T500 150T600 100T700 150T800 100T900 150T1000 100L1000 300Z"/></svg>'); /* Abstract city silhouette */
+            mask-size: cover;
+            mask-repeat: no-repeat;
+            animation: cityGlow 5s ease-in-out infinite alternate;
+            transition: filter 0.5s ease; /* Smooth transition for glow */
+        }
+
+        @keyframes cityGlow {
+            0% { filter: drop-shadow(0 0 5px var(--city-glow-color)); }
+            100% { filter: drop-shadow(0 0 15px var(--city-glow-color)); }
+        }
+
+        /* Neon Car Animation */
+        .neon-car {
+            position: absolute;
+            bottom: 10%; /* Road level */
+            height: 5px;
+            background-color: var(--neon-car-color);
+            border-radius: 2px;
+            animation: moveNeonCar 15s linear infinite;
+            opacity: 0.7;
+            filter: drop-shadow(0 0 8px var(--neon-car-color));
+            transition: background-color 0.5s ease, filter 0.5s ease;
+        }
+
+        .car-1 {
+            width: 60px;
+            left: -10%;
+            animation-delay: 0s;
+        }
+
+        .car-2 {
+            width: 40px;
+            left: -30%;
+            animation-delay: 7s;
+        }
+
+        @keyframes moveNeonCar {
+            0% { transform: translateX(-100vw); }
+            100% { transform: translateX(200vw); }
+        }
+
+        /* Neon Smoke/Pollution Animation */
+        .neon-smoke {
+            position: absolute;
+            background-color: var(--neon-smoke-color);
+            border-radius: 50%;
+            filter: blur(2px) drop-shadow(0 0 5px var(--neon-smoke-color));
+            opacity: 0.6;
+            animation: riseNeonSmoke 10s ease-in-out infinite alternate;
+            transition: background-color 0.5s ease, filter 0.5s ease;
+        }
+
+        .smoke-1 {
+            width: 30px;
+            height: 30px;
+            bottom: 30%;
+            left: 20%;
+            animation-delay: 0s;
+        }
+
+        .smoke-2 {
+            width: 25px;
+            height: 25px;
+            bottom: 35%;
+            left: 70%;
+            animation-delay: 5s;
+        }
+
+        @keyframes riseNeonSmoke {
+            0% { transform: translateY(0) scale(1); opacity: 0.6; }
+            50% { opacity: 0.4; }
+            100% { transform: translateY(-150px) scale(1.2); opacity: 0.1; }
+        }
+
+        /* Neon Bird/Particle Animation */
+        .neon-bird {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background-color: var(--neon-bird-color);
+            border-radius: 50%;
+            filter: drop-shadow(0 0 5px var(--neon-bird-color));
+            opacity: 0.8;
+            animation: flyNeonBird 20s linear infinite;
+            transition: background-color 0.5s ease, filter 0.5s ease;
+        }
+
+        .bird-1 {
+            top: 15%;
+            left: -5%;
+            animation-delay: 0s;
+        }
+
+        .bird-2 {
+            top: 25%;
+            left: -20%;
+            animation-delay: 10s;
+        }
+
+        @keyframes flyNeonBird {
+            0% { transform: translateX(-100vw) translateY(0); }
+            25% { transform: translateX(-50vw) translateY(50px); }
+            50% { transform: translateX(0vw) translateY(0); }
+            75% { transform: translateX(50vw) translateY(-50px); }
+            100% { transform: translateX(200vw) translateY(0); }
+        }
+
+
+        /* --- Menu UI Styling --- */
+        .menu-ui {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            width: 90%; /* Responsive width */
+            max-width: 400px; /* Max width for larger screens */
+            padding: 20px;
+            background: var(--menu-bg-dark);
+            border-radius: 15px;
+            backdrop-filter: blur(5px); /* Frosted glass effect */
+            box-shadow: 0 0 20px var(--menu-shadow-dark);
+            transition: background 0.5s ease, box-shadow 0.5s ease;
+        }
+
+        /* Neon Text Effect */
+        .neon-text {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(2.5em, 8vw, 4em); /* Responsive font size */
+            color: var(--text-color-dark); /* Base white for text */
+            text-shadow:
+                0 0 7px var(--text-color-dark),
+                0 0 10px var(--text-color-dark),
+                0 0 21px var(--text-color-dark),
+                0 0 42px var(--neon-main-glow), /* Primary neon color */
+                0 0 82px var(--neon-main-glow),
+                0 0 92px var(--neon-main-glow),
+                0 0 102px var(--neon-main-glow),
+                0 0 151px var(--neon-main-glow);
+            margin-bottom: 10px;
+            transition: text-shadow 0.5s ease, color 0.5s ease;
+        }
+
+        .neon-text-sub {
+            font-family: 'Inter', sans-serif;
+            font-size: clamp(1em, 3vw, 1.5em); /* Responsive font size */
+            color: var(--text-color-dark);
+            text-shadow:
+                0 0 5px var(--text-color-dark),
+                0 0 10px var(--neon-sub-glow); /* Secondary neon color */
+            margin-top: 0;
+            margin-bottom: 40px;
+            transition: text-shadow 0.5s ease, color 0.5s ease;
+        }
+
+        /* Neon Button Effect */
+        .neon-button {
+            display: block;
+            width: 80%; /* Responsive width */
+            max-width: 250px; /* Max width for buttons */
+            padding: 15px 20px;
+            margin: 20px auto;
+            background: var(--button-bg-dark);
+            color: var(--button-text-dark);
+            border: 2px solid var(--button-border-dark);
+            border-radius: 10px;
+            font-size: clamp(1em, 2.5vw, 1.2em);
+            font-family: 'Inter', sans-serif;
+            cursor: pointer; /* Ensures cursor changes to pointer */
+            transition: all 0.3s ease-in-out;
+            box-shadow:
+                0 0 5px var(--button-shadow-dark),
+                0 0 10px var(--button-shadow-dark),
+                0 0 20px var(--button-shadow-dark),
+                0 0 40px var(--button-shadow-dark) inset; /* Inner glow */
+            /* Removed animation: buttonPulse */
+        }
+
+        .neon-button:hover {
+            background: rgba(0, 255, 255, 0.2);
+            color: #fff;
+            box-shadow:
+                0 0 10px var(--button-shadow-dark),
+                0 0 20px var(--button-shadow-dark),
+                0 0 30px var(--button-shadow-dark),
+                0 0 50px var(--button-shadow-dark),
+                0 0 80px var(--button-shadow-dark) inset;
+            transform: scale(0.95); /* Zoom out on hover */
+            /* animation: none; is no longer needed as animation is removed from base */
+        }
+
+        .neon-button:active {
+            transform: scale(0.98);
+            box-shadow:
+                0 0 5px var(--button-shadow-dark),
+                0 0 10px var(--button-shadow-dark) inset;
+        }
+
+        /* Theme Toggle Button Specific Styling */
+        .neon-button.theme-toggle {
+            position: absolute; /* Position it absolutely */
+            top: 20px; /* From the top */
+            right: 20px; /* From the right */
+            width: auto; /* Adjust width based on content */
+            padding: 10px 15px; /* Smaller padding */
+            margin: 0; /* Remove auto margins */
+            background: rgba(255, 255, 0, 0.1); /* Yellowish base for toggle */
+            color: #ffff00; /* Yellow neon text */
+            border: 2px solid #ffff00; /* Yellow neon border */
+            box-shadow:
+                0 0 5px #ffff00,
+                0 0 10px #ffff00,
+                0 0 20px #ffff00,
+                0 0 40px #ffff00 inset;
+            z-index: 10; /* Ensure it's above other elements */
+        }
+
+        .neon-button.theme-toggle:hover {
+            background: rgba(255, 255, 0, 0.2);
+            color: #fff;
+            box-shadow:
+                0 0 10px #ffff00,
+                0 0 20px #ffff00,
+                0 0 30px #ffff00,
+                0 0 50px #ffff00,
+                0 0 80px #ffff00 inset;
+        }
+
+        /* --- Level 1 Intro Scene Specific Styling --- */
+        #level-1-intro .instructions {
+            margin-top: 30px;
+            font-size: clamp(0.9em, 2.5vw, 1.1em);
+            line-height: 1.6;
+            padding: 0 20px;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+            color: var(--text-color-dark);
+            text-shadow: 0 0 5px rgba(0, 255, 255, 0.3);
+            transition: color 0.5s ease, text-shadow 0.5s ease;
+        }
+
+        /* --- Level 1 Game Scene Specific Styling --- */
+        #level-1-game {
+            background-image: var(--level1-bg-dark); /* Default dark theme background */
+            background-size: cover;
+            background-position: center;
+            transition: background-image 0.5s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 3em;
+            color: white;
+            text-shadow: 2px 2px 5px black;
+        }
+
+        body.light-theme #level-1-game {
+            background-image: var(--level1-bg-light); /* Light theme background */
+        }
+
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .menu-ui {
+                padding: 15px;
+            }
+            .neon-text {
+                font-size: clamp(2em, 10vw, 3.5em);
+            }
+            .neon-text-sub {
+                font-size: clamp(0.9em, 4vw, 1.3em);
+            }
+            .neon-button {
+                padding: 12px 15px;
+                font-size: clamp(0.9em, 3vw, 1.1em);
+            }
+            .neon-button.theme-toggle {
+                top: 10px; /* Adjust for smaller screens */
+                right: 10px;
+                padding: 8px 12px;
+                font-size: 0.9em;
+            }
+            #level-1-intro .instructions {
+                font-size: clamp(0.8em, 3vw, 1em);
+            }
+        }
+
+        a {
+            text-decoration: none;  /* removes underline */
+        }
+
+        a:link, a:visited {
+            color: inherit;         /* removes blue color */
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <!-- Level 1 Intro Scene (Now the initial active scene) -->
+        <div id="level-1-intro" class="game-scene active">
+            <div class="background-city-container">
+                <!-- Stylized city skyline with neon glow -->
+                <div class="city-skyline"></div>
+                <!-- Animated neon cars -->
+                <div class="neon-car car-1"></div>
+                <div class="neon-car car-2"></div>
+                <!-- Animated neon smoke/pollution elements -->
+                <div class="neon-smoke smoke-1"></div>
+                <div class="neon-smoke smoke-2"></div>
+                <!-- Animated neon birds/particles -->
+                <div class="neon-bird bird-1"></div>
+                <div class="neon-bird bird-2"></div>
+            </div>
+            <div class="menu-ui">
+                <h1 class="neon-text">Level 1: Emission Escape</h1>
+                <!-- Removed <a> tag as the button now directly handles scene change -->
+                <a href="Level 1.html" class="neon-button" id="start-game-btn">Start Game</a>
+
+                <p class="instructions">
+                    <strong>How to Play Level 1:</strong><br>
+                    Your mission is to cleanse our city's air by skillfully avoiding harmful carbon emissions. To navigate, use the Spacebar to jump over incoming pollutants. Your score increases as you successfully dodge these environmental threats, and your goal is to reach a score of 300 to win the level. Be careful, though, as any collision with pollution will result in a game over!
+                </p>
+            </div>
+        </div>
+
+        <!-- Level 1 Game Scene (Placeholder) -->
+        <!-- <div id="level-1-game" class="game-scene">
+            <h1 class="neon-text">Level 1: City Cleanup In Progress...</h1>
+        </div> -->
+
+        <!-- Theme toggle button - positioned outside scene divs for top-right placement -->
+        <!-- <button id="theme-toggle-btn" class="neon-button theme-toggle">Toggle Theme</button> -->
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Get references to scenes
+            const level1Intro = document.getElementById('level-1-intro');
+            const level1Game = document.getElementById('level-1-game');
+
+            // Get references to buttons
+            const startGameBtn = document.getElementById('start-game-btn');
+            // const themeToggleBtn = document.getElementById('theme-toggle-btn'); // This button is commented out in HTML
+            // const body = document.body; // Not needed if theme toggle is commented out
+
+            // Function to change active scene
+            function changeScene(hideScene, showScene) {
+                if (hideScene) {
+                    hideScene.classList.remove('active');
+                }
+                if (showScene) {
+                    showScene.classList.add('active');
+                }
+            }
+
+            // Event listener for Start Game button
+            startGameBtn.addEventListener('click', () => {
+                console.log('Start Game button clicked! Starting Level 1 Game.');
+                changeScene(level1Intro, level1Game);
+                // alert('Get ready to clean the city! (Actual game mechanics will go here)'); // Removed alert
+            });
+
+            // Event listener for Theme Toggle button (commented out as button is commented out)
+            // if (themeToggleBtn) { // Check if button exists before adding listener
+            //     themeToggleBtn.addEventListener('click', () => {
+            //         body.classList.toggle('light-theme');
+            //         console.log('Theme toggled. Current theme:', body.classList.contains('light-theme') ? 'Light' : 'Dark');
+            //     });
+            // }
+        });
+    </script>
+</body>
+</html>

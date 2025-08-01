@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>You Win!</title>
+    <!-- Google Fonts for modern/neon look -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Inter:wght@400&display=swap" rel="stylesheet">
+
+    <style>
+        /* Global Styles */
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(180deg, #0d0d1a 0%, #000000 100%); /* Dark, deep gradient */
+            color: #e0e0e0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh; /* Ensure it takes full viewport height */
+        }
+
+        /* Container for the win message and button */
+        .win-container {
+            text-align: center;
+            padding: 40px 20px;
+            background: rgba(0, 0, 0, 0.4); /* Slightly transparent dark background */
+            border-radius: 15px;
+            backdrop-filter: blur(5px); /* Frosted glass effect */
+            box-shadow: 0 0 30px rgba(0, 255, 0, 0.5); /* Green glow for win container */
+            max-width: 600px; /* Limit width on larger screens */
+            width: 90%; /* Responsive width */
+        }
+
+        /* Neon Text Effect for "YOU WIN!" */
+        .neon-win-text {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(3em, 10vw, 6em); /* Responsive font size */
+            color: #fff; /* Base white for text */
+            text-shadow:
+                0 0 7px #fff,
+                0 0 10px #fff,
+                0 0 21px #fff,
+                0 0 42px #0f0, /* Primary neon green */
+                0 0 82px #0f0,
+                0 0 92px #0f0,
+                0 0 102px #0f0,
+                0 0 151px #0f0;
+            margin-bottom: 40px;
+            animation: pulseNeon 1.5s infinite alternate; /* Subtle pulsing animation */
+        }
+
+        @keyframes pulseNeon {
+            0% { text-shadow: 0 0 7px #fff, 0 0 10px #fff, 0 0 21px #fff, 0 0 42px #0f0, 0 0 82px #0f0, 0 0 92px #0f0, 0 0 102px #0f0, 0 0 151px #0f0; }
+            100% { text-shadow: 0 0 5px #fff, 0 0 9px #fff, 0 0 18px #fff, 0 0 38px #0f0, 0 0 78px #0f0, 0 0 88px #0f0, 0 0 98px #0f0, 0 0 140px #0f0; }
+        }
+
+        /* Neon Button Style for "Next" */
+        .neon-button {
+            display: inline-block; /* Allows centering with text-align */
+            width: 80%; /* Responsive width */
+            max-width: 280px; /* Max width for button */
+            padding: 18px 30px;
+            margin-top: 20px;
+            background: rgba(0, 255, 0, 0.1); /* Semi-transparent green base */
+            color: #00ff00; /* Neon green text color */
+            border: 2px solid #00ff00; /* Neon green border */
+            border-radius: 12px;
+            font-size: clamp(1.2em, 3vw, 1.8em);
+            font-family: 'Inter', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.3s ease-in-out;
+            box-shadow:
+                0 0 5px #00ff00,
+                0 0 10px #00ff00,
+                0 0 20px #00ff00,
+                0 0 40px #00ff00 inset; /* Inner glow */
+        }
+
+        .neon-button:hover {
+            background: rgba(0, 255, 0, 0.2);
+            color: #fff;
+            box-shadow:
+                0 0 10px #00ff00,
+                0 0 20px #00ff00,
+                0 0 30px #00ff00,
+                0 0 50px #00ff00,
+                0 0 80px #00ff00 inset;
+            transform: scale(1.05);
+        }
+
+        .neon-button:active {
+            transform: scale(0.98);
+            box-shadow:
+                0 0 5px #00ff00,
+                0 0 10px #00ff00 inset;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 480px) {
+            .win-container {
+                padding: 30px 15px;
+            }
+            .neon-win-text {
+                font-size: clamp(2.5em, 12vw, 4em);
+            }
+            .neon-button {
+                padding: 15px 20px;
+                font-size: clamp(1em, 4vw, 1.5em);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="win-container">
+        <h1 class="neon-win-text">YOU WIN!</h1>
+        <a href="outro.html">
+  <button id="retry-button" class="neon-button">Next</button>
+</a>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const nextButton = document.getElementById('next-button');
+
+            nextButton.addEventListener('click', () => {
+                // For now, this will just show an alert.
+                // In a multi-level game, this would navigate to the next level or a final report screen.
+                // alert('Congratulations! You clicked Next. (This would lead to Level 2 or a final summary!)');
+                console.log('Next button clicked!');
+            });
+        });
+    </script>
+</body>
+</html>

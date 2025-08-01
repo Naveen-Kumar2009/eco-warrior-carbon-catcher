@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eco Warrior - Level 4 Intro</title>
+    <!-- Google Fonts for modern/neon look -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Inter:wght@400&display=swap" rel="stylesheet">
+
+    <style>
+        /* Global Styles */
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(180deg, #0d0d1a 0%, #000000 100%); /* Dark, deep gradient */
+            color: #e0e0e0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh; /* Ensure it takes full viewport height */
+        }
+
+        /* Container for the level intro elements */
+        .level-intro-container {
+            text-align: center;
+            padding: 40px 20px;
+            background: rgba(0, 0, 0, 0.4); /* Slightly transparent dark background */
+            border-radius: 15px;
+            backdrop-filter: blur(5px); /* Frosted glass effect */
+            box-shadow: 0 0 30px rgba(255, 0, 255, 0.5); /* Magenta glow for container */
+            max-width: 700px; /* Limit width on larger screens */
+            width: 90%; /* Responsive width */
+        }
+
+        /* Neon Text Effect for Level Title */
+        .neon-level-text {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(2.5em, 8vw, 5em); /* Responsive font size */
+            color: #fff; /* Base white for text */
+            text-shadow:
+                0 0 7px #fff,
+                0 0 10px #fff,
+                0 0 21px #fff,
+                0 0 42px #f0f, /* Primary neon magenta */
+                0 0 82px #f0f,
+                0 0 92px #f0f,
+                0 0 102px #f0f,
+                0 0 151px #f0f;
+            margin-bottom: 30px;
+            animation: pulseNeon 1.5s infinite alternate; /* Subtle pulsing animation */
+        }
+
+        @keyframes pulseNeon {
+            0% { text-shadow: 0 0 7px #fff, 0 0 10px #fff, 0 0 21px #fff, 0 0 42px #f0f, 0 0 82px #f0f, 0 0 92px #f0f, 0 0 102px #f0f, 0 0 151px #f0f; }
+            100% { text-shadow: 0 0 5px #fff, 0 0 9px #fff, 0 0 18px #fff, 0 0 38px #f0f, 0 0 78px #f0f, 0 0 88px #f0f, 0 0 98px #f0f, 0 0 140px #f0f; }
+        }
+
+        /* Neon Button Style for "Play Level 4" */
+        .neon-button {
+            display: inline-block; /* Allows centering with text-align */
+            width: 80%; /* Responsive width */
+            max-width: 300px; /* Max width for button */
+            padding: 18px 30px;
+            margin-top: 20px;
+            background: rgba(255, 0, 255, 0.1); /* Semi-transparent magenta base */
+            color: #ff00ff; /* Neon magenta text color */
+            border: 2px solid #ff00ff; /* Neon magenta border */
+            border-radius: 12px;
+            font-size: clamp(1.2em, 3vw, 1.8em);
+            font-family: 'Inter', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.3s ease-in-out;
+            box-shadow:
+                0 0 5px #ff00ff,
+                0 0 10px #ff00ff,
+                0 0 20px #ff00ff,
+                0 0 40px #ff00ff inset; /* Inner glow */
+        }
+
+        .neon-button:hover {
+            background: rgba(255, 0, 255, 0.2);
+            color: #fff;
+            box-shadow:
+                0 0 10px #ff00ff,
+                0 0 20px #ff00ff,
+                0 0 30px #ff00ff,
+                0 0 50px #ff00ff,
+                0 0 80px #ff00ff inset;
+            transform: scale(1.05);
+        }
+
+        .neon-button:active {
+            transform: scale(0.98);
+            box-shadow:
+                0 0 5px #ff00ff,
+                0 0 10px #ff00ff inset;
+        }
+
+        /* Instructions Text */
+        .instructions {
+            margin-top: 40px;
+            font-size: clamp(0.9em, 2.5vw, 1.1em);
+            line-height: 1.6;
+            padding: 0 20px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            color: #e0e0e0;
+            text-shadow: 0 0 5px rgba(255, 0, 255, 0.3); /* Subtle glow */
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 480px) {
+            .level-intro-container {
+                padding: 30px 15px;
+            }
+            .neon-level-text {
+                font-size: clamp(2em, 12vw, 4em);
+            }
+            .neon-button {
+                padding: 15px 20px;
+                font-size: clamp(1em, 4vw, 1.5em);
+            }
+            .instructions {
+                font-size: clamp(0.8em, 3.5vw, 1em);
+            }
+        }
+
+        a {
+            text-decoration: none;  /* removes underline */
+        }
+
+        a:link, a:visited {
+            color: inherit;         /* removes blue color */
+        }
+    </style>
+</head>
+<body>
+    <div class="level-intro-container">
+        <h1 class="neon-level-text">Level 4: Mirror Runner</h1>
+        <a href="Level 4.html" class="neon-button" id="start-game-btn">Start Game</a>
+        <p class="instructions">
+            <strong>How to Play Level 4:</strong><br>
+            Prepare for a unique challenge where you control two players simultaneously: one on the top track and one mirrored on the bottom. To move, use the Left Arrow key to make the top player go left and the bottom player go right, or the Right Arrow key to make the top player go right and the bottom player go left. Press the Spacebar or Up Arrow key to make both players jump simultaneously, avoiding spikes that appear on their respective tracks. Your score increases by 10 points every 5 seconds you survive, with the goal of reaching 100 points to win; however, if either player collides with a spike, it's game over!
+        </p>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const playButton = document.getElementById('play-level-4-button');
+
+            playButton.addEventListener('click', () => {
+                // For now, this will just show an alert.
+                // In a multi-level game, this would navigate to the actual Level 4 game.
+                alert('Starting Level 4: Global Harmony! (Actual game mechanics would load here)');
+                console.log('Play Level 4 button clicked!');
+            });
+        });
+    </script>
+</body>
+</html>
